@@ -49,23 +49,24 @@ class SearchSettings {
 
 // === StateNotifier to update settings ===
 class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
-  SearchSettingsNotifier()
-      : super(SearchSettings(startDate: DateTime.now()));
+  SearchSettingsNotifier(SearchSettings initialState) : super(initialState);
 
   void setEventType(EventType type) {
     state = state.copyWith(eventType: type);
   }
+
+  // other setters...
 
   void setStartDate(DateTime date) {
     state = state.copyWith(startDate: date);
   }
 
   void setLocationMode(LocationMode mode, {SpecifiedLocation? specified}) {
-  state = state.copyWith(
-    locationMode: mode,
-    specifiedLocation: specified,
-  );
-}
+    state = state.copyWith(
+      locationMode: mode,
+      specifiedLocation: specified,
+    );
+  }
 
   void setSpecifiedLocation(SpecifiedLocation loc) {
     state = state.copyWith(specifiedLocation: loc);
@@ -74,5 +75,12 @@ class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
 
 // === Provider ===
 final searchSettingsProvider =
-    StateNotifierProvider<SearchSettingsNotifier, SearchSettings>(
-        (ref) => SearchSettingsNotifier());
+    StateNotifierProvider<SearchSettingsNotifier, SearchSettings>((ref) {
+  return SearchSettingsNotifier(
+    SearchSettings(
+      eventType: EventType.openMicJam, // <-- default to Open Mic Jam
+      locationMode: LocationMode.current,
+      startDate: DateTime.now(),
+    ),
+  );
+});

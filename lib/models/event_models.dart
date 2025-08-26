@@ -4,7 +4,7 @@ enum EventType { openMicJam, gig }
 
 extension EventTypeLabel on EventType {
   String get label => switch (this) {
-        EventType.openMicJam => 'Open mic / jam',
+        EventType.openMicJam => 'Open Mic / Jam',
         // EventType.jam => 'Jam',
         EventType.gig => 'Gig',
       };
