@@ -123,12 +123,12 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                   }
 
                   // Call notifier with the correct specified parameter
-                  ref
-                      .read(prov.searchSettingsProvider.notifier)
-                      .setLocationMode(
-                        models.LocationMode.specified,
-                        specified: models.SpecifiedLocation(kind, value)  as models.SpecifiedLocation?,
-                      );
+                  // ref
+                  //     .read(prov.searchSettingsProvider.notifier)
+                  //     .setLocationMode(
+                  //       models.LocationMode.specified,
+                  //       specified: prov.SpecifiedLocation(kind, value),
+                  //      );
                 }
 
                 Navigator.pop(context);
