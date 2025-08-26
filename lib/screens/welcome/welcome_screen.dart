@@ -13,12 +13,23 @@ class WelcomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(searchSettingsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('FIND A')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: 40),
+            Center(
+              child: Text(
+                'FIND A …',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 24),
             OutlinedButton(
               onPressed: () => context.push('/select'),
               child: Text(settings.eventType.label),
@@ -51,7 +62,8 @@ class WelcomeScreen extends ConsumerWidget {
             const Spacer(),
             OutlinedButton(
               onPressed: () => context.push('/login'),
-              child: const Text('Login/Register – Needed For Updating Events'),
+              child: const Text(
+                  'Login/Register – Needed For Updating Events'),
             ),
           ],
         ),

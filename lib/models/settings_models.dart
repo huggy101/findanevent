@@ -53,7 +53,7 @@ class SearchSettings {
       };
 
   factory SearchSettings.fromMap(Map<String, dynamic> m) => SearchSettings(
-        eventType: EventType.values.firstWhere((e) => e.name == m['eventType'], orElse: () => EventType.openMic),
+        eventType: EventType.values.firstWhere((e) => e.name == m['eventType'], orElse: () => EventType.openMicJam),
         locationMode: LocationMode.values.firstWhere((e) => e.name == m['locationMode'], orElse: () => LocationMode.current),
         specifiedLocation: m['specifiedLocation'] == null
             ? null

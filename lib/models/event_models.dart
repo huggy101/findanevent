@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum EventType { openMic, jam, gig }
+enum EventType { openMicJam, gig }
 
 extension EventTypeLabel on EventType {
   String get label => switch (this) {
-        EventType.openMic => 'Open mic',
-        EventType.jam => 'Jam',
+        EventType.openMicJam => 'Open mic / jam',
+        // EventType.jam => 'Jam',
         EventType.gig => 'Gig',
       };
 }
@@ -67,7 +67,7 @@ class EventItem {
     return EventItem(
       id: doc.id,
       venueId: d['venueId'] ?? '',
-      type: EventType.values.firstWhere((e) => e.name == d['type'], orElse: () => EventType.openMic),
+      type: EventType.values.firstWhere((e) => e.name == d['type'], orElse: () => EventType.openMicJam),
       start: (d['start'] as Timestamp).toDate().toLocal(),
     );
   }
