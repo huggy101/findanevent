@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "813261390073",
+    "project_id": "venuelookup-75152",
+    "storage_bucket": "venuelookup-75152.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813261390073:android:e38719e7654004bcf9e228",
+        "android_client_info": {
+          "package_name": "com.example.findanevent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7C4KPvJ7LUTjEyDe7fVwiFP27f-Ci8tY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813261390073:android:ef8306f5696a1ea2f9e228",
+        "android_client_info": {
+          "package_name": "com.example.venuelookup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7C4KPvJ7LUTjEyDe7fVwiFP27f-Ci8tY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813261390073:android:7a63671711457510f9e228",
+        "android_client_info": {
+          "package_name": "com.venuelookup.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7C4KPvJ7LUTjEyDe7fVwiFP27f-Ci8tY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
