@@ -2,8 +2,8 @@ import 'package:intl/intl.dart';
 import 'event_models.dart';
 
 enum LocationMode { current, specified }
-
 enum SpecifiedLocationKind { postcode, latlng, threeWords }
+enum ProximityScope { miles, nationwide, worldwide }
 
 class SpecifiedLocation {
   final SpecifiedLocationKind kind;
@@ -12,18 +12,23 @@ class SpecifiedLocation {
   SpecifiedLocation(this.kind, this.value);
 }
 
-
 class SearchSettings {
   final EventType eventType;
   final LocationMode locationMode;
   final SpecifiedLocation? specifiedLocation;
   final DateTime startDate; // at midnight
 
+  // 👇 new fields
+  final ProximityScope proximityScope;
+  final int miles;
+
   const SearchSettings({
     required this.eventType,
     required this.locationMode,
     this.specifiedLocation,
     required this.startDate,
+    this.proximityScope = ProximityScope.miles, // default
+    this.miles = 20, // default
   });
 
   String dateLabel() => DateFormat('EEEE d MMMM yyyy').format(startDate);
@@ -33,11 +38,16 @@ class SearchSettings {
     LocationMode? locationMode,
     SpecifiedLocation? specifiedLocation,
     DateTime? startDate,
-  }) => SearchSettings(
+    ProximityScope? proximityScope,
+    int? miles,
+  }) =>
+      SearchSettings(
         eventType: eventType ?? this.eventType,
         locationMode: locationMode ?? this.locationMode,
         specifiedLocation: specifiedLocation ?? this.specifiedLocation,
         startDate: startDate ?? this.startDate,
+        proximityScope: proximityScope ?? this.proximityScope,
+        miles: miles ?? this.miles,
       );
 
   Map<String, dynamic> toMap() => {
@@ -49,18 +59,36 @@ class SearchSettings {
                 'kind': specifiedLocation!.kind.name,
                 'value': specifiedLocation!.value,
               },
-        'startDate': DateTime(startDate.year, startDate.month, startDate.day).toUtc().toIso8601String(),
+        'startDate': DateTime(startDate.year, startDate.month, startDate.day)
+            .toUtc()
+            .toIso8601String(),
+        'proximityScope': proximityScope.name,
+        'miles': miles,
       };
 
   factory SearchSettings.fromMap(Map<String, dynamic> m) => SearchSettings(
-        eventType: EventType.values.firstWhere((e) => e.name == m['eventType'], orElse: () => EventType.openMicJam),
-        locationMode: LocationMode.values.firstWhere((e) => e.name == m['locationMode'], orElse: () => LocationMode.current),
+        eventType: EventType.values.firstWhere(
+          (e) => e.name == m['eventType'],
+          orElse: () => EventType.openMicJam,
+        ),
+        locationMode: LocationMode.values.firstWhere(
+          (e) => e.name == m['locationMode'],
+          orElse: () => LocationMode.current,
+        ),
         specifiedLocation: m['specifiedLocation'] == null
             ? null
             : SpecifiedLocation(
-                SpecifiedLocationKind.values.firstWhere((k) => k.name == m['specifiedLocation']['kind'], orElse: () => SpecifiedLocationKind.postcode),
+                SpecifiedLocationKind.values.firstWhere(
+                  (k) => k.name == m['specifiedLocation']['kind'],
+                  orElse: () => SpecifiedLocationKind.postcode,
+                ),
                 m['specifiedLocation']['value'],
               ),
         startDate: DateTime.parse(m['startDate']).toLocal(),
+        proximityScope: ProximityScope.values.firstWhere(
+          (p) => p.name == (m['proximityScope'] ?? 'miles'),
+          orElse: () => ProximityScope.miles,
+        ),
+        miles: m['miles'] ?? 20,
       );
 }

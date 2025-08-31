@@ -5,7 +5,7 @@ import '../../models/event_models.dart';
 import '../../providers/selection_providers.dart';
 import '../../widgets/date_label.dart';
 import '../../models/settings_models.dart';
-import '../../providers/terms_provider.dart'; // 👈 add this
+import '../../providers/terms_provider.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -13,6 +13,20 @@ class WelcomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(searchSettingsProvider);
+
+    // Build proximity label dynamically
+    String proximityLabel;
+    switch (settings.proximityScope) {
+      case ProximityScope.miles:
+        proximityLabel = "Within ${settings.miles} miles";
+        break;
+      case ProximityScope.nationwide:
+        proximityLabel = "Nationwide";
+        break;
+      case ProximityScope.worldwide:
+        proximityLabel = "Worldwide";
+        break;
+    }
 
     return Scaffold(
       body: Padding(
@@ -56,14 +70,17 @@ class WelcomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => context.push('/proximity'),
+              child: Text(proximityLabel),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => context.push('/events'),
               child: const Text('Find The Events'),
             ),
             const Spacer(),
-
-            // 👇 Step 4: testing button for Terms & Conditions
             OutlinedButton(
               onPressed: () {
                 ref.read(termsAcceptedProvider.notifier).resetForTesting();
@@ -71,9 +88,7 @@ class WelcomeScreen extends ConsumerWidget {
               },
               child: const Text("Force Terms Again (Testing)"),
             ),
-
             const SizedBox(height: 12),
-
             OutlinedButton(
               onPressed: () => context.push('/login'),
               child: const Text(

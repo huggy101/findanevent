@@ -10,6 +10,7 @@ import 'screens/welcome/welcome_screen.dart';
 import 'screens/welcome/select_event_type_screen.dart';
 import 'screens/welcome/where_are_you_screen.dart';
 import 'screens/welcome/change_start_date_screen.dart';
+import 'screens/welcome/proximity_screen.dart';
 import 'screens/list_of_events/list_of_events_screen.dart';
 import 'screens/terms/terms_screen.dart';
 // import 'screens/login/login_screen.dart';
@@ -45,6 +46,11 @@ class MyApp extends ConsumerWidget {
           path: '/change-date',
           builder: (context, state) => const ChangeStartDateScreen(),
         ),
+        GoRoute(
+          path: '/proximity',
+          builder: (context, state) => const ProximityScreen(),
+        ),
+
         GoRoute(
           path: '/events',
           builder: (context, state) => const ListOfEventsScreen(),
