@@ -20,8 +20,7 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
     super.initState();
     final settings = ref.read(searchSettingsProvider);
     _selected = settings.proximityScope;
-    _milesController =
-        TextEditingController(text: settings.miles.toString());
+    _milesController = TextEditingController(text: settings.miles.toString());
   }
 
   @override
@@ -38,12 +37,12 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Miles option
-            RadioListTile<ProximityScope>(
+            // Miles option (number field + literal "miles" outside)
+            RadioMenuButton<ProximityScope>(
               value: ProximityScope.miles,
               groupValue: _selected,
-              onChanged: (value) => setState(() => _selected = value!),
-              title: Row(
+              onChanged: (v) => setState(() => _selected = v!),
+              child: Row(
                 children: [
                   const Text("Within"),
                   const SizedBox(width: 8),
@@ -59,33 +58,33 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
                         border: OutlineInputBorder(),
                       ),
                       onTap: () {
-                        // auto-select "Miles" if they start typing
+                        // If they tap the field, select the "miles" option automatically
                         if (_selected != ProximityScope.miles) {
                           setState(() => _selected = ProximityScope.miles);
                         }
                       },
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Text("miles"), // literal suffix outside field
+                  const SizedBox(width: 6),
+                  const Text("miles"),
                 ],
               ),
             ),
 
             // Nationwide option
-            RadioListTile<ProximityScope>(
+            RadioMenuButton<ProximityScope>(
               value: ProximityScope.nationwide,
               groupValue: _selected,
-              onChanged: (value) => setState(() => _selected = value!),
-              title: const Text("Nationwide"),
+              onChanged: (v) => setState(() => _selected = v!),
+              child: const Text("Nationwide"),
             ),
 
             // Worldwide option
-            RadioListTile<ProximityScope>(
+            RadioMenuButton<ProximityScope>(
               value: ProximityScope.worldwide,
               groupValue: _selected,
-              onChanged: (value) => setState(() => _selected = value!),
-              title: const Text("Worldwide"),
+              onChanged: (v) => setState(() => _selected = v!),
+              child: const Text("Worldwide"),
             ),
 
             const Spacer(),

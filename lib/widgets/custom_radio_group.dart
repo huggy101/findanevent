@@ -29,9 +29,15 @@ class CustomRadioGroup<T> extends StatelessWidget {
             width: double.infinity, // Full width
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12), // More vertical padding
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 12,
+                ),
                 backgroundColor: isSelected
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.15) // ✅ fixed
                     : null,
                 side: BorderSide(
                   color: isSelected
@@ -45,7 +51,7 @@ class CustomRadioGroup<T> extends StatelessWidget {
                 item.label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 18, // Slightly larger
+                  fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
