@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// import '../../models/event_models.dart';
 import '../../providers/selection_providers.dart';
 import '../../providers/data_providers.dart';
 import '../../providers/app_providers.dart';
@@ -13,17 +12,18 @@ class ListOfEventsScreen extends ConsumerWidget {
 
   // Compute a distance label for an event
   Future<String> _distanceLabel(
-      WidgetRef ref,
-      (double, double) origin,
-      (double, double) dest,
-      ) async {
+    WidgetRef ref,
+    (double, double) origin,
+    (double, double) dest,
+  ) async {
     final distance = await ref
         .read(distanceServiceProvider)
         .drivingDistanceMeters(origin, dest);
     if (distance != null) return '${(distance / 1000).toStringAsFixed(1)} km';
 
     // fallback to haversine if driving distance fails
-    final km = ref.read(distanceServiceProvider)
+    final km = ref
+        .read(distanceServiceProvider)
         .haversineKm(origin.$1, origin.$2, dest.$1, dest.$2);
     return '${km.toStringAsFixed(1)} km';
   }
@@ -40,9 +40,8 @@ class ListOfEventsScreen extends ConsumerWidget {
       switch (s.kind) {
         case SpecifiedLocationKind.postcode:
           return await ref.read(geoServiceProvider).geocodePostcode(s.value);
-        case SpecifiedLocationKind.latlng:
-          final parts = s.value.split(',');
-          return (double.parse(parts[0]), double.parse(parts[1]));
+        case SpecifiedLocationKind.plusCode: // <-- new case
+          return await ref.read(geoServiceProvider).geocodePlusCode(s.value);
         case SpecifiedLocationKind.threeWords:
           return await ref.read(w3wServiceProvider).toCoords(s.value);
       }
@@ -59,7 +58,9 @@ class ListOfEventsScreen extends ConsumerWidget {
         data: (rows) => FutureBuilder<(double, double)>(
           future: _origin(ref),
           builder: (context, snap) {
-            if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+            if (!snap.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
             final origin = snap.data!;
 
             return ListView.builder(

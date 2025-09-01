@@ -63,20 +63,20 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                   ChoiceChip(
                     label: const Text('Postcode'),
                     selected: _kind == models.SpecifiedLocationKind.postcode,
-                    onSelected: (_) =>
-                        setState(() => _kind = models.SpecifiedLocationKind.postcode),
+                    onSelected: (_) => setState(
+                        () => _kind = models.SpecifiedLocationKind.postcode),
                   ),
                   ChoiceChip(
-                    label: const Text('Lat/Lng'),
-                    selected: _kind == models.SpecifiedLocationKind.latlng,
-                    onSelected: (_) =>
-                        setState(() => _kind = models.SpecifiedLocationKind.latlng),
+                    label: const Text('Plus Code'),
+                    selected: _kind == models.SpecifiedLocationKind.plusCode,
+                    onSelected: (_) => setState(
+                        () => _kind = models.SpecifiedLocationKind.plusCode),
                   ),
                   ChoiceChip(
                     label: const Text('///three.words'),
                     selected: _kind == models.SpecifiedLocationKind.threeWords,
-                    onSelected: (_) =>
-                        setState(() => _kind = models.SpecifiedLocationKind.threeWords),
+                    onSelected: (_) => setState(
+                        () => _kind = models.SpecifiedLocationKind.threeWords),
                   ),
                 ],
               ),
@@ -87,8 +87,8 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                   labelText: switch (_kind) {
                     models.SpecifiedLocationKind.postcode =>
                       'Enter UK postcode',
-                    models.SpecifiedLocationKind.latlng =>
-                      'Enter lat,lng (e.g., 51.5072,-0.1276)',
+                    models.SpecifiedLocationKind.plusCode =>
+                      'Enter Google Plus Code (e.g., 9C4WQ9MQ+77)',
                     models.SpecifiedLocationKind.threeWords =>
                       'Enter what3words (e.g., index.home.raft)',
                   },
@@ -113,10 +113,9 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                         return;
                       }
                       break;
-                    case models.SpecifiedLocationKind.latlng:
-                      if (!RegExp(r'^-?\d+(\.\d+)?,-?\d+(\.\d+)?$')
-                          .hasMatch(value)) {
-                        _show(context, 'Please enter lat,lng');
+                    case models.SpecifiedLocationKind.plusCode:
+                      if (!Validators.isPlusCode(value)) {
+                        _show(context, 'Please enter a valid Plus Code');
                         return;
                       }
                       break;

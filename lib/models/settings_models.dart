@@ -2,7 +2,10 @@ import 'package:intl/intl.dart';
 import 'event_models.dart';
 
 enum LocationMode { current, specified }
-enum SpecifiedLocationKind { postcode, latlng, threeWords }
+
+// ✅ changed "latlng" to "plusCode"
+enum SpecifiedLocationKind { postcode, plusCode, threeWords }
+
 enum ProximityScope { miles, nationwide, worldwide }
 
 class SpecifiedLocation {

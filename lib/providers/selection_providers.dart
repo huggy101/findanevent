@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import '../models/event_models.dart';
 import '../models/settings_models.dart'; // <-- contains LocationMode, SpecifiedLocation, ProximityScope, SearchSettings
 

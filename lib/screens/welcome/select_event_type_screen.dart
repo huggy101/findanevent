@@ -15,14 +15,18 @@ class SelectEventTypeScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Select Event Type')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: CustomRadioGroup<EventType>( 
+        child: CustomRadioGroup<EventType>(
           groupValue: settings.eventType,
           items: const [
-            RadioItem(value: EventType.openMicJam, label: 'Open Mic Jam'),
+            RadioItem(value: EventType.openMicJam, label: 'Open Mic / Jam'),
             RadioItem(value: EventType.gig, label: 'Gig'),
           ],
-          onChanged: (v) =>
-              ref.read(searchSettingsProvider.notifier).setEventType(v),
+          onChanged: (v) {
+            ref.read(searchSettingsProvider.notifier).setEventType(v);
+
+            // Pop back immediately
+            Navigator.of(context).pop();
+          },
         ),
       ),
     );
