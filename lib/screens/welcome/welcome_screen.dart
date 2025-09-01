@@ -10,6 +10,18 @@ import '../../providers/terms_provider.dart';
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
+  // Helper to display the specified location nicely
+  String _locationLabel(SpecifiedLocation loc) {
+    switch (loc.kind) {
+      case SpecifiedLocationKind.postcode:
+        return 'Postcode: ${loc.value}';
+      case SpecifiedLocationKind.plusCode:
+        return 'Plus Code: ${loc.value}';
+      case SpecifiedLocationKind.threeWords:
+        return 'W3W: ///${loc.value}';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(searchSettingsProvider);
@@ -56,9 +68,13 @@ class WelcomeScreen extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => context.push('/where'),
-                    child: Text(settings.locationMode == LocationMode.current
-                        ? 'Current Location'
-                        : 'Location Specified'),
+                    child: Text(
+                      settings.locationMode == LocationMode.current
+                          ? 'Current Location'
+                          : settings.specifiedLocation != null
+                              ? _locationLabel(settings.specifiedLocation!)
+                              : 'Location Specified',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
