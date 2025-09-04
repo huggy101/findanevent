@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // <-- needed for SystemChrome
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,7 +16,14 @@ import 'screens/list_of_events/list_of_events_screen.dart';
 import 'screens/terms/terms_screen.dart';
 // import 'screens/login/login_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock app to portrait
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -30,54 +38,21 @@ class MyApp extends ConsumerWidget {
     final router = GoRouter(
       initialLocation: '/welcome',
       routes: [
-        GoRoute(
-          path: '/welcome',
-          builder: (context, state) => const WelcomeScreen(),
-        ),
-        GoRoute(
-          path: '/select',
-          builder: (context, state) => const SelectEventTypeScreen(),
-        ),
-        GoRoute(
-          path: '/where',
-          builder: (context, state) => const WhereAreYouScreen(),
-        ),
-        GoRoute(
-          path: '/change-date',
-          builder: (context, state) => const ChangeStartDateScreen(),
-        ),
-        GoRoute(
-          path: '/proximity',
-          builder: (context, state) => const ProximityScreen(),
-        ),
-
-        GoRoute(
-          path: '/events',
-          builder: (context, state) => const ListOfEventsScreen(),
-        ),
-        GoRoute(
-          path: '/terms',
-          builder: (context, state) => const TermsScreen(),
-        ),
-        // GoRoute(
-        //   path: '/login',
-        //   builder: (context, state) => const LoginScreen(),
-        // ),
+        GoRoute(path: '/welcome', builder: (context, state) => const WelcomeScreen()),
+        GoRoute(path: '/select', builder: (context, state) => const SelectEventTypeScreen()),
+        GoRoute(path: '/where', builder: (context, state) => const WhereAreYouScreen()),
+        GoRoute(path: '/change-date', builder: (context, state) => const ChangeStartDateScreen()),
+        GoRoute(path: '/proximity', builder: (context, state) => const ProximityScreen()),
+        GoRoute(path: '/events', builder: (context, state) => const ListOfEventsScreen()),
+        GoRoute(path: '/terms', builder: (context, state) => const TermsScreen()),
+        // GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       ],
       redirect: (context, state) {
         final isGoingToTerms = state.fullPath == '/terms';
 
-        // If not accepted and not already on /terms, send them there
-        if (!termsAccepted && !isGoingToTerms) {
-          return '/terms';
-        }
-
-        // If already accepted and trying to go to /terms, send home
-        if (termsAccepted && isGoingToTerms) {
-          return '/welcome';
-        }
-
-        return null; // no redirect
+        if (!termsAccepted && !isGoingToTerms) return '/terms';
+        if (termsAccepted && isGoingToTerms) return '/welcome';
+        return null;
       },
     );
 

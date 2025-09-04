@@ -1,24 +1,53 @@
-import 'package:what3words/what3words.dart';
+// lib/services/what3words_service.dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class What3WordsService {
-  final What3WordsV3 _api;
+  final String apiKey;
+  What3WordsService(this.apiKey);
 
-  What3WordsService(String apiKey) : _api = What3WordsV3(apiKey);
+  /// three words -> coordinates
+  Future<(double, double)> toCoords(String threeWords) async {
+    final url = Uri.parse(
+      'https://api.what3words.com/v3/convert-to-coordinates'
+      '?words=${Uri.encodeComponent(threeWords)}&key=$apiKey',
+    );
 
-  Future<(double lat, double lng)> toCoords(String threeWords) async {
-    final res = await _api.convertToCoordinates(threeWords).execute();
-
-    // explicitly check for success
-    if (res.isSuccessful == true) {
-      final data = res.data();
-      final coord = data?.coordinates;
-      if (coord != null) {
-        return (coord.lat, coord.lng);
-      }
+    final resp = await http.get(url);
+    if (resp.statusCode != 200) {
+      throw Exception('what3words request failed (${resp.statusCode})');
     }
 
-    // handle error
-    final error = res.error();
-    throw Exception('Invalid w3w: ${error?.code ?? 'unknown'}');
+    final data = json.decode(resp.body);
+    final coords = data['coordinates'];
+    if (coords == null) {
+      final msg = data['error']?['message'] ?? 'Invalid what3words address';
+      throw Exception(msg);
+    }
+
+    final lat = (coords['lat'] as num).toDouble();
+    final lng = (coords['lng'] as num).toDouble();
+    return (lat, lng);
+    }
+
+  /// coordinates -> three words
+  Future<String> fromCoords(double lat, double lng) async {
+    final url = Uri.parse(
+      'https://api.what3words.com/v3/convert-to-3wa'
+      '?coordinates=$lat,$lng&key=$apiKey',
+    );
+
+    final resp = await http.get(url);
+    if (resp.statusCode != 200) {
+      throw Exception('what3words request failed (${resp.statusCode})');
+    }
+
+    final data = json.decode(resp.body);
+    final words = data['words'] as String?;
+    if (words == null) {
+      final msg = data['error']?['message'] ?? 'Could not get three words';
+      throw Exception(msg);
+    }
+    return words;
   }
 }

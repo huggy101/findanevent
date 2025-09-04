@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/settings_models.dart' as models;
 import '../../providers/selection_providers.dart' as prov;
+import '../../providers/app_providers.dart'; // <-- geo & w3w providers live here
 import '../../core/validators.dart';
 
 class WhereAreYouScreen extends ConsumerStatefulWidget {
@@ -16,6 +17,7 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
   late models.LocationMode _mode;
   models.SpecifiedLocationKind _kind = models.SpecifiedLocationKind.postcode;
   final TextEditingController _ctrl = TextEditingController();
+  bool _loadingLocation = false;
 
   @override
   void initState() {
@@ -32,6 +34,40 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _fillFromCurrentLocation() async {
+    setState(() => _loadingLocation = true);
+
+    try {
+      final geo = ref.read(geoServiceProvider);
+      final pos = await geo.currentPosition();
+      final lat = pos.latitude;
+      final lng = pos.longitude;
+
+      String value;
+
+      switch (_kind) {
+        case models.SpecifiedLocationKind.postcode:
+          value = await geo.reverseGeocodePostcode(lat, lng);
+          break;
+        case models.SpecifiedLocationKind.plusCode:
+          value = await geo.reverseGeocodePlusCode(lat, lng);
+          break;
+        case models.SpecifiedLocationKind.threeWords:
+          final w3w = ref.read(w3wServiceProvider);
+          value = await w3w.fromCoords(lat, lng);
+          break;
+      }
+
+      setState(() {
+        _ctrl.text = value;
+      });
+    } catch (e) {
+      _show(context, 'Could not fetch location: $e');
+    } finally {
+      setState(() => _loadingLocation = false);
+    }
   }
 
   @override
@@ -93,6 +129,21 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                       'Enter what3words (e.g., index.home.raft)',
                   },
                   border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: _loadingLocation ? null : _fillFromCurrentLocation,
+                  icon: _loadingLocation
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.my_location),
+                  label: const Text("Use Current Location"),
                 ),
               ),
             ],
