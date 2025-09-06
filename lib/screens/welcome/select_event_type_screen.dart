@@ -19,6 +19,7 @@ class SelectEventTypeScreen extends ConsumerWidget {
           groupValue: settings.eventType,
           items: const [
             RadioItem(value: EventType.openMicJam, label: 'Open Mic / Jam'),
+            RadioItem(value: EventType.karaoke, label: 'Karaoke'),
             RadioItem(value: EventType.gig, label: 'Gig'),
           ],
           onChanged: (v) {

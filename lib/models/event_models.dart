@@ -1,19 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum EventType { openMicJam, gig }
+/// Types of events supported in the app
+enum EventType { openMicJam, gig, karaoke }
 
+/// Extension to return human-friendly labels
 extension EventTypeLabel on EventType {
   String get label => switch (this) {
         EventType.openMicJam => 'Open Mic / Jam',
-        // EventType.jam => 'Jam',
         EventType.gig => 'Gig',
+        EventType.karaoke => 'Karaoke',
       };
 }
 
+/// A venue where events take place
 class Venue {
   final String id;
   final String name;
-  final String postcode; // store as canonical UK postcode
+  final String postcode; // canonical UK postcode
   final double lat;
   final double lng;
   final String what3words; // optional
@@ -48,18 +51,27 @@ class Venue {
   }
 }
 
+/// An event linked to a venue
 class EventItem {
   final String id;
   final String venueId;
   final EventType type;
   final DateTime start;
+  final DateTime end;
 
-  EventItem({required this.id, required this.venueId, required this.type, required this.start});
+  EventItem({
+    required this.id,
+    required this.venueId,
+    required this.type,
+    required this.start,
+    required this.end,
+  });
 
   Map<String, dynamic> toMap() => {
         'venueId': venueId,
         'type': type.name,
-        'start': start.toUtc(),
+        'start': Timestamp.fromDate(start.toUtc()), // ✅ Firestore Timestamp
+        'end': Timestamp.fromDate(end.toUtc()),
       };
 
   factory EventItem.fromDoc(DocumentSnapshot doc) {
@@ -67,8 +79,12 @@ class EventItem {
     return EventItem(
       id: doc.id,
       venueId: d['venueId'] ?? '',
-      type: EventType.values.firstWhere((e) => e.name == d['type'], orElse: () => EventType.openMicJam),
+      type: EventType.values.firstWhere(
+        (e) => e.name == d['type'],
+        orElse: () => EventType.openMicJam,
+      ),
       start: (d['start'] as Timestamp).toDate().toLocal(),
+      end: (d['end'] as Timestamp).toDate().toLocal(),
     );
   }
 }
