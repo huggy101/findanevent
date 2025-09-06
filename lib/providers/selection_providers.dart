@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:flutter/foundation.dart';
 import '../models/event_models.dart';
-import '../models/settings_models.dart'; // <-- contains LocationMode, SpecifiedLocation, ProximityScope, SearchSettings
+import '../models/settings_models.dart';
 
 // === StateNotifier to update settings ===
 class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
@@ -12,7 +11,22 @@ class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
   }
 
   void setStartDate(DateTime date) {
-    state = state.copyWith(startDate: date);
+    // ensure midnight
+    final d = DateTime(date.year, date.month, date.day);
+    state = state.copyWith(startDate: d);
+  }
+
+  void setEndDate(DateTime date) {
+    // ensure midnight
+    final d = DateTime(date.year, date.month, date.day);
+    state = state.copyWith(endDate: d);
+  }
+
+  /// Convenience to set both together
+  void setDateRange(DateTime start, DateTime end) {
+    final s = DateTime(start.year, start.month, start.day);
+    final e = DateTime(end.year, end.month, end.day);
+    state = state.copyWith(startDate: s, endDate: e);
   }
 
   void setLocationMode(LocationMode mode, {SpecifiedLocation? specified}) {
@@ -42,13 +56,18 @@ class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
 // === Provider ===
 final searchSettingsProvider =
     StateNotifierProvider<SearchSettingsNotifier, SearchSettings>((ref) {
+  final now = DateTime.now();
+  final start = DateTime(now.year, now.month, now.day);
+  final end = start.add(const Duration(days: 7)); // default to a week ahead
+
   return SearchSettingsNotifier(
     SearchSettings(
-      eventType: EventType.openMicJam, // default event type
+      eventType: EventType.openMicJam,
       locationMode: LocationMode.current,
-      startDate: DateTime.now(),
-      proximityScope: ProximityScope.miles, // default scope
-      miles: 20, // default miles
+      startDate: start,
+      endDate: end,
+      proximityScope: ProximityScope.miles,
+      miles: 20,
     ),
   );
 });

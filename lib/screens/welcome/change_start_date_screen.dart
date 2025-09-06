@@ -6,7 +6,8 @@ class ChangeStartDateScreen extends ConsumerStatefulWidget {
   const ChangeStartDateScreen({super.key});
 
   @override
-  ConsumerState<ChangeStartDateScreen> createState() => _ChangeStartDateScreenState();
+  ConsumerState<ChangeStartDateScreen> createState() =>
+      _ChangeStartDateScreenState();
 }
 
 class _ChangeStartDateScreenState extends ConsumerState<ChangeStartDateScreen>
@@ -16,23 +17,27 @@ class _ChangeStartDateScreenState extends ConsumerState<ChangeStartDateScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _openDatePicker());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openDateRangePicker());
   }
 
-  Future<void> _openDatePicker() async {
+  Future<void> _openDateRangePicker() async {
     final settings = ref.read(searchSettingsProvider);
     final now = DateTime.now();
 
-    final picked = await showDatePicker(
+    final picked = await showDateRangePicker(
       context: context,
-      initialDate: settings.startDate,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      initialDateRange: DateTimeRange(
+        start: settings.startDate,
+        end: settings.endDate,
+      ),
     );
 
     if (picked != null) {
       ref.read(searchSettingsProvider.notifier)
-          .setStartDate(DateTime(picked.year, picked.month, picked.day));
+        ..setStartDate(DateTime(picked.start.year, picked.start.month, picked.start.day))
+        ..setEndDate(DateTime(picked.end.year, picked.end.month, picked.end.day));
     }
 
     if (!mounted) return;
@@ -49,7 +54,7 @@ class _ChangeStartDateScreenState extends ConsumerState<ChangeStartDateScreen>
       opacity: _opacity,
       duration: const Duration(milliseconds: 200),
       child: const Scaffold(
-        backgroundColor: Colors.white, // optional for smooth fade
+        backgroundColor: Colors.white, // smooth fade background
       ),
     );
   }

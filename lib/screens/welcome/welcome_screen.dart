@@ -50,10 +50,9 @@ class WelcomeScreen extends ConsumerWidget {
             Center(
               child: Text(
                 'FIND A …',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -72,8 +71,8 @@ class WelcomeScreen extends ConsumerWidget {
                       settings.locationMode == LocationMode.current
                           ? 'Current Location'
                           : settings.specifiedLocation != null
-                              ? _locationLabel(settings.specifiedLocation!)
-                              : 'Location Specified',
+                          ? _locationLabel(settings.specifiedLocation!)
+                          : 'Location Specified',
                     ),
                   ),
                 ),
@@ -81,7 +80,8 @@ class WelcomeScreen extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => context.push('/change-date'),
-                    child: DateLabel(date: settings.startDate),
+                    // 👇 show range instead of single date
+                    child: Text(settings.rangeLabel()),
                   ),
                 ),
               ],
@@ -107,9 +107,7 @@ class WelcomeScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () => context.push('/login'),
-              child: const Text(
-                'Login/Register – Needed For Updating Events',
-              ),
+              child: const Text('Login/Register – Needed For Updating Events'),
             ),
           ],
         ),
