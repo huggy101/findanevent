@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/event_models.dart';
 import '../../providers/selection_providers.dart';
-import '../../widgets/date_label.dart';
+// import '../../widgets/date_label.dart';
 import '../../models/settings_models.dart';
 import '../../providers/terms_provider.dart';
 

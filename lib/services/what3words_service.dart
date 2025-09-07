@@ -8,6 +8,10 @@ class What3WordsService {
 
   /// three words -> coordinates
   Future<(double, double)> toCoords(String threeWords) async {
+    if (apiKey.isEmpty) {
+      throw Exception('Missing what3words API key');
+    }
+
     final url = Uri.parse(
       'https://api.what3words.com/v3/convert-to-coordinates'
       '?words=${Uri.encodeComponent(threeWords)}&key=$apiKey',
@@ -15,7 +19,8 @@ class What3WordsService {
 
     final resp = await http.get(url);
     if (resp.statusCode != 200) {
-      throw Exception('what3words request failed (${resp.statusCode})');
+      throw Exception(
+          'what3words request failed (${resp.statusCode}): ${resp.body}');
     }
 
     final data = json.decode(resp.body);
@@ -28,10 +33,14 @@ class What3WordsService {
     final lat = (coords['lat'] as num).toDouble();
     final lng = (coords['lng'] as num).toDouble();
     return (lat, lng);
-    }
+  }
 
   /// coordinates -> three words
   Future<String> fromCoords(double lat, double lng) async {
+    if (apiKey.isEmpty) {
+      throw Exception('Missing what3words API key');
+    }
+
     final url = Uri.parse(
       'https://api.what3words.com/v3/convert-to-3wa'
       '?coordinates=$lat,$lng&key=$apiKey',
@@ -39,7 +48,8 @@ class What3WordsService {
 
     final resp = await http.get(url);
     if (resp.statusCode != 200) {
-      throw Exception('what3words request failed (${resp.statusCode})');
+      throw Exception(
+          'what3words request failed (${resp.statusCode}): ${resp.body}');
     }
 
     final data = json.decode(resp.body);
@@ -49,5 +59,11 @@ class What3WordsService {
       throw Exception(msg);
     }
     return words;
+  }
+
+  /// Quick format check (does not call API)
+  bool isValidThreeWords(String input) {
+    final regex = RegExp(r'^[a-z]+(\.[a-z]+){2}$');
+    return regex.hasMatch(input.trim());
   }
 }
