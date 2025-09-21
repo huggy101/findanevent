@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../models/event_models.dart';
-import '../../providers/selection_providers.dart';
-// import '../../widgets/date_label.dart';
 import '../../models/settings_models.dart';
+import '../../providers/selection_providers.dart';
 import '../../providers/terms_provider.dart';
+import '../../providers/event_type_providers.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -25,6 +24,7 @@ class WelcomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(searchSettingsProvider);
+    final selectedEventType = ref.watch(selectedEventTypeProvider);
 
     // Build proximity label dynamically
     String proximityLabel;
@@ -59,7 +59,7 @@ class WelcomeScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             OutlinedButton(
               onPressed: () => context.push('/select'),
-              child: Text(settings.eventType.label),
+              child: Text(selectedEventType?.label ?? settings.eventTypeId),
             ),
             const SizedBox(height: 12),
             Row(
@@ -71,8 +71,8 @@ class WelcomeScreen extends ConsumerWidget {
                       settings.locationMode == LocationMode.current
                           ? 'Current Location'
                           : settings.specifiedLocation != null
-                          ? _locationLabel(settings.specifiedLocation!)
-                          : 'Location Specified',
+                              ? _locationLabel(settings.specifiedLocation!)
+                              : 'Location Specified',
                     ),
                   ),
                 ),
@@ -80,7 +80,6 @@ class WelcomeScreen extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => context.push('/change-date'),
-                    // 👇 show range instead of single date
                     child: Text(settings.rangeLabel()),
                   ),
                 ),

@@ -1,15 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Types of events supported in the app
-enum EventType { openMicJam, gig, karaoke }
+/// Event type model (dynamic from Firestore)
+class EventTypeModel {
+  final String id;    // e.g. "openMicJam"
+  final String label; // e.g. "Open Mic / Jam"
 
-/// Extension to return human-friendly labels
-extension EventTypeLabel on EventType {
-  String get label => switch (this) {
-        EventType.openMicJam => 'Open Mic / Jam',
-        EventType.gig => 'Gig',
-        EventType.karaoke => 'Karaoke',
+  EventTypeModel({
+    required this.id,
+    required this.label,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'label': label,
       };
+
+  factory EventTypeModel.fromDoc(DocumentSnapshot doc) {
+    final d = doc.data() as Map<String, dynamic>;
+    return EventTypeModel(
+      id: doc.id,
+      label: d['label'] ?? doc.id,
+    );
+  }
 }
 
 /// A venue where events take place
@@ -55,21 +66,21 @@ class Venue {
 class EventItem {
   final String id;
   final String venueId;
-  final EventType type;
+  final String typeId; // Firestore eventTypes/<id>
   final DateTime start;
   final DateTime end;
 
   EventItem({
     required this.id,
     required this.venueId,
-    required this.type,
+    required this.typeId,
     required this.start,
     required this.end,
   });
 
   Map<String, dynamic> toMap() => {
         'venueId': venueId,
-        'type': type.name,
+        'type': typeId,
         'start': Timestamp.fromDate(start.toUtc()), // ✅ Firestore Timestamp
         'end': Timestamp.fromDate(end.toUtc()),
       };
@@ -79,10 +90,7 @@ class EventItem {
     return EventItem(
       id: doc.id,
       venueId: d['venueId'] ?? '',
-      type: EventType.values.firstWhere(
-        (e) => e.name == d['type'],
-        orElse: () => EventType.openMicJam,
-      ),
+      typeId: d['type'] ?? '',
       start: (d['start'] as Timestamp).toDate().toLocal(),
       end: (d['end'] as Timestamp).toDate().toLocal(),
     );

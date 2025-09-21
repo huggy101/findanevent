@@ -6,6 +6,8 @@ import '../../providers/data_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../widgets/event_card.dart';
 import '../../models/settings_models.dart';
+import '../../providers/event_type_providers.dart';
+import '../../models/event_models.dart';
 
 class ListOfEventsScreen extends ConsumerWidget {
   const ListOfEventsScreen({super.key});
@@ -40,7 +42,7 @@ class ListOfEventsScreen extends ConsumerWidget {
       switch (s.kind) {
         case SpecifiedLocationKind.postcode:
           return await ref.read(geoServiceProvider).geocodePostcode(s.value);
-        case SpecifiedLocationKind.plusCode: // <-- new case
+        case SpecifiedLocationKind.plusCode:
           return await ref.read(geoServiceProvider).geocodePlusCode(s.value);
         case SpecifiedLocationKind.threeWords:
           return await ref.read(w3wServiceProvider).toCoords(s.value);
@@ -51,42 +53,57 @@ class ListOfEventsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(eventsQueryProvider);
+    final eventTypesAsync = ref.watch(eventTypesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Events')),
       body: eventsAsync.when(
         data: (rows) => FutureBuilder<(double, double)>(
           future: _origin(ref),
-          builder: (context, snap) {
-            if (!snap.hasData) {
+          builder: (context, originSnap) {
+            if (!originSnap.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
-            final origin = snap.data!;
+            final origin = originSnap.data!;
 
-            return ListView.builder(
-              itemCount: rows.length,
-              itemBuilder: (context, index) {
-                final tuple = rows[index];
-                final event = tuple.$1;
-                final venue = tuple.$2;
+            return eventTypesAsync.when(
+              data: (types) {
+                return ListView.builder(
+                  itemCount: rows.length,
+                  itemBuilder: (context, index) {
+                    final tuple = rows[index];
+                    final event = tuple.$1;
+                    final venue = tuple.$2;
 
-                return FutureBuilder<String>(
-                  future: _distanceLabel(ref, origin, (venue.lat, venue.lng)),
-                  builder: (context, distSnap) {
-                    final distance = distSnap.data ?? '';
-                    return EventCard(
-                      event: event,
-                      venue: venue,
-                      distanceLabel: distance,
+                    final typeModel = types.firstWhere(
+                      (t) => t.id == event.typeId,
+                      orElse: () =>
+                          EventTypeModel(id: event.typeId, label: event.typeId),
+                    );
+
+                    return FutureBuilder<String>(
+                      future: _distanceLabel(ref, origin, (venue.lat, venue.lng)),
+                      builder: (context, distSnap) {
+                        final distance = distSnap.data ?? '';
+                        return EventCard(
+                          event: event,
+                          venue: venue,
+                          distanceLabel: distance,
+                          eventTypeLabel: typeModel.label,
+                        );
+                      },
                     );
                   },
                 );
               },
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('Error loading types: $err')),
             );
           },
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error: (err, _) => Center(child: Text('Error loading events: $err')),
       ),
     );
   }

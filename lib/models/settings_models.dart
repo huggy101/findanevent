@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import 'event_models.dart';
 
 enum LocationMode { current, specified }
 
@@ -12,11 +11,28 @@ class SpecifiedLocation {
   final SpecifiedLocationKind kind;
   final String value;
 
-  SpecifiedLocation(this.kind, this.value);
+  const SpecifiedLocation(this.kind, this.value);
+
+  Map<String, dynamic> toMap() => {
+        'kind': kind.name,
+        'value': value,
+      };
+
+  factory SpecifiedLocation.fromMap(Map<String, dynamic> m) {
+    return SpecifiedLocation(
+      SpecifiedLocationKind.values.firstWhere(
+        (k) => k.name == m['kind'],
+        orElse: () => SpecifiedLocationKind.postcode,
+      ),
+      m['value'] as String,
+    );
+  }
 }
 
 class SearchSettings {
-  final EventType eventType;
+  /// 🔑 Firestore ID of the event type (from `eventTypes` collection)
+  final String eventTypeId;
+
   final LocationMode locationMode;
   final SpecifiedLocation? specifiedLocation;
 
@@ -29,7 +45,7 @@ class SearchSettings {
   final int miles;
 
   const SearchSettings({
-    required this.eventType,
+    required this.eventTypeId,
     required this.locationMode,
     this.specifiedLocation,
     required this.startDate,
@@ -43,18 +59,12 @@ class SearchSettings {
     final day = d.day;
     final suffix = (day >= 11 && day <= 13)
         ? 'th'
-        : (() {
-            switch (day % 10) {
-              case 1:
-                return 'st';
-              case 2:
-                return 'nd';
-              case 3:
-                return 'rd';
-              default:
-                return 'th';
-            }
-          })();
+        : switch (day % 10) {
+            1 => 'st',
+            2 => 'nd',
+            3 => 'rd',
+            _ => 'th',
+          };
     final weekday = DateFormat('EEEE').format(d); // e.g. Monday
     final monthShort = DateFormat('MMM').format(d); // e.g. Sep
     return '$weekday ${day}$suffix $monthShort ${d.year}';
@@ -68,7 +78,7 @@ class SearchSettings {
       '${_formatWithOrdinal(startDate)} → ${_formatWithOrdinal(endDate)}';
 
   SearchSettings copyWith({
-    EventType? eventType,
+    String? eventTypeId,
     LocationMode? locationMode,
     SpecifiedLocation? specifiedLocation,
     DateTime? startDate,
@@ -77,7 +87,7 @@ class SearchSettings {
     int? miles,
   }) =>
       SearchSettings(
-        eventType: eventType ?? this.eventType,
+        eventTypeId: eventTypeId ?? this.eventTypeId,
         locationMode: locationMode ?? this.locationMode,
         specifiedLocation: specifiedLocation ?? this.specifiedLocation,
         startDate: startDate ?? this.startDate,
@@ -87,14 +97,9 @@ class SearchSettings {
       );
 
   Map<String, dynamic> toMap() => {
-        'eventType': eventType.name,
+        'eventTypeId': eventTypeId,
         'locationMode': locationMode.name,
-        'specifiedLocation': specifiedLocation == null
-            ? null
-            : {
-                'kind': specifiedLocation!.kind.name,
-                'value': specifiedLocation!.value,
-              },
+        'specifiedLocation': specifiedLocation?.toMap(),
         'startDate': DateTime(startDate.year, startDate.month, startDate.day)
             .toUtc()
             .toIso8601String(),
@@ -106,22 +111,16 @@ class SearchSettings {
       };
 
   factory SearchSettings.fromMap(Map<String, dynamic> m) => SearchSettings(
-        eventType: EventType.values.firstWhere(
-          (e) => e.name == m['eventType'],
-          orElse: () => EventType.openMicJam,
-        ),
+        eventTypeId: m['eventTypeId'] as String? ??
+            'openMicJam', // fallback if not set
         locationMode: LocationMode.values.firstWhere(
           (e) => e.name == m['locationMode'],
           orElse: () => LocationMode.current,
         ),
         specifiedLocation: m['specifiedLocation'] == null
             ? null
-            : SpecifiedLocation(
-                SpecifiedLocationKind.values.firstWhere(
-                  (k) => k.name == m['specifiedLocation']['kind'],
-                  orElse: () => SpecifiedLocationKind.postcode,
-                ),
-                m['specifiedLocation']['value'],
+            : SpecifiedLocation.fromMap(
+                Map<String, dynamic>.from(m['specifiedLocation']),
               ),
         startDate: DateTime.parse(m['startDate']).toLocal(),
         endDate: DateTime.parse(m['endDate']).toLocal(),
