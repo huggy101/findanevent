@@ -2,26 +2,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Event type model (dynamic from Firestore)
 class EventTypeModel {
-  final String id;    // e.g. "openMicJam"
-  final String label; // e.g. "Open Mic / Jam"
+  final String id;
+  final String label;
+  final int order;
 
-  EventTypeModel({
-    required this.id,
-    required this.label,
-  });
-
-  Map<String, dynamic> toMap() => {
-        'label': label,
-      };
+  EventTypeModel({required this.id, required this.label, required this.order});
 
   factory EventTypeModel.fromDoc(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;
     return EventTypeModel(
       id: doc.id,
       label: d['label'] ?? doc.id,
+      order: d['order'] ?? 999, // fallback if missing
     );
   }
+
+  @override
+  String toString() => 'EventTypeModel(id: $id, label: $label, order: $order)';
 }
+
 
 /// A venue where events take place
 class Venue {

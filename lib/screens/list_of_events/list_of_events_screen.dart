@@ -77,8 +77,11 @@ class ListOfEventsScreen extends ConsumerWidget {
 
                     final typeModel = types.firstWhere(
                       (t) => t.id == event.typeId,
-                      orElse: () =>
-                          EventTypeModel(id: event.typeId, label: event.typeId),
+                      orElse: () => EventTypeModel(
+                        id: event.typeId,
+                        label: event.typeId,
+                        order: 999, // 👈 fallback order so code compiles
+                      ),
                     );
 
                     return FutureBuilder<String>(

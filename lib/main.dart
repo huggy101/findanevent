@@ -18,14 +18,21 @@ import 'screens/list_of_events/list_of_events_screen.dart';
 import 'screens/terms/terms_screen.dart';
 // import 'screens/login/login_screen.dart';
 
+import 'services/firebase_service.dart'; // your FirebaseService
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+  // initialize once
+  await FirebaseService.init();
 
+  // print project id to confirm which project we're talking to
+  print('Connected to Firebase project: ${Firebase.app().options.projectId}');
+  
   // Lock app to portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

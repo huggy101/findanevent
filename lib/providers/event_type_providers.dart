@@ -22,8 +22,13 @@ final selectedEventTypeProvider = Provider<EventTypeModel?>((ref) {
   return eventTypesAsync.maybeWhen(
     data: (types) => types.firstWhere(
       (t) => t.id == settings.eventTypeId,
-      orElse: () => EventTypeModel(id: settings.eventTypeId, label: settings.eventTypeId),
+      orElse: () => EventTypeModel(
+        id: settings.eventTypeId,
+        label: settings.eventTypeId,
+        order: 999, // 👈 fallback order if not found in Firestore
+      ),
     ),
     orElse: () => null,
   );
 });
+

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_models.dart';
 
@@ -6,8 +8,22 @@ class FirestoreService {
 
   /// Fetch all event types from Firestore
   Future<List<EventTypeModel>> getEventTypes() async {
-    final q = await _db.collection('eventTypes').get();
-    return q.docs.map(EventTypeModel.fromDoc).toList();
+    final q = await _db
+        .collection('eventTypes')
+        .orderBy('order') // 👈 Added ordering by 'order' field
+        .get();
+
+    // 🔍 Debugging lines
+    print("Number of docs: ${q.docs.length}");
+    for (var doc in q.docs) {
+      print("Doc ID: ${doc.id}, data: ${doc.data()}");
+    }
+
+    // Now map into your model
+    final eventTypes = q.docs.map(EventTypeModel.fromDoc).toList();
+    print("Mapped eventTypes: $eventTypes");
+
+    return eventTypes;
   }
 
   /// Fetch all venues
@@ -43,4 +59,3 @@ class FirestoreService {
     return d.exists ? Venue.fromDoc(d) : null;
   }
 }
-
