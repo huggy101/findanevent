@@ -16,36 +16,54 @@ class SelectEventTypeScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Select Event Type')),
       body: eventTypesAsync.when(
         data: (types) {
-          return ListView(
-            children: [
-              // ✅ In the future you can add a "Select All" checkbox here
-              // CheckboxListTile(
-              //   title: const Text("All Event Types"),
-              //   value: settings.eventTypeIds.isEmpty,
-              //   onChanged: (val) {
-              //     ref.read(searchSettingsProvider.notifier).setEventTypes([]);
-              //     Navigator.pop(context);
-              //   },
-              // ),
-              ...types.map((t) {
-                final isSelected = settings.eventTypeId == t.id;
-                return RadioListTile<String>(
-                  title: Text(t.label),
-                  value: t.id,
-                  groupValue: settings.eventTypeId,
-                  onChanged: (v) {
-                    if (v != null) {
-                      ref.read(searchSettingsProvider.notifier).setEventType(v);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                );
-              }),
-            ],
+          if (types.isEmpty) {
+            return const Center(child: Text('No event types available.'));
+          }
+
+          return ListView.separated(
+            itemCount: types.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final t = types[index];
+              return RadioListTile<String>(
+                key: ValueKey(t.id),
+                title: Text(t.label),
+                value: t.id,
+                groupValue: settings.eventTypeId,
+                selected: settings.eventTypeId == t.id,
+                onChanged: (v) {
+                  if (v == null) return;
+                  debugPrint('SelectEventType: tapped value=$v available=${types.map((e) => e.id).toList()}');
+                  try {
+                    ref.read(searchSettingsProvider.notifier).setEventType(v);
+                    if (context.mounted) Navigator.of(context).pop();
+                  } catch (err, st) {
+                    debugPrint('setEventType error: $err\n$st');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Failed to set event type'))
+                    );
+                  }
+                },
+              );
+            },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error loading event types: $e')),
+        error: (e, st) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Error loading event types'),
+              const SizedBox(height: 8),
+              Text(e.toString()),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => ref.refresh(eventTypesProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -19,15 +19,17 @@ final selectedEventTypeProvider = Provider<EventTypeModel?>((ref) {
   final eventTypesAsync = ref.watch(eventTypesProvider);
   final settings = ref.watch(searchSettingsProvider);
 
+  final selectedId = settings.eventTypeId;
+  if (selectedId == null) return null;
+
   return eventTypesAsync.maybeWhen(
-    data: (types) => types.firstWhere(
-      (t) => t.id == settings.eventTypeId,
-      orElse: () => EventTypeModel(
-        id: settings.eventTypeId,
-        label: settings.eventTypeId,
-        order: 999, // 👈 fallback order if not found in Firestore
-      ),
-    ),
+    data: (types) {
+      final sId = selectedId.toString();
+      for (final t in types) {
+        if (t.id.toString() == sId) return t;
+      }
+      return null;
+    },
     orElse: () => null,
   );
 });

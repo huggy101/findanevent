@@ -3,10 +3,11 @@ import '../models/settings_models.dart';
 
 /// === StateNotifier to manage search settings ===
 class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
-  SearchSettingsNotifier(SearchSettings initialState) : super(initialState);
+  SearchSettingsNotifier(super.initialState);
 
-  void setEventType(String typeId) {
-    state = state.copyWith(eventTypeId: typeId);
+  // accept any incoming id and store its string form to keep types consistent
+  void setEventType(Object? typeId) {
+    state = state.copyWith(eventTypeId: typeId?.toString());
   }
 
   void setStartDate(DateTime date) {

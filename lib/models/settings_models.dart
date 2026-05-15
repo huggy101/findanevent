@@ -67,7 +67,7 @@ class SearchSettings {
           };
     final weekday = DateFormat('EEEE').format(d); // e.g. Monday
     final monthShort = DateFormat('MMM').format(d); // e.g. Sep
-    return '$weekday ${day}$suffix $monthShort ${d.year}';
+    return '$weekday $day$suffix $monthShort ${d.year}';
   }
 
   /// Human friendly single-date label (start)
