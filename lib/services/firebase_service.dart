@@ -15,6 +15,6 @@ class FirebaseService {
   static Future<void> init() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     // You can also print other options if you want:
-    print('Firebase initialized (projectId=${Firebase.app().options.projectId})');
+    // print('Firebase initialized (projectId=${Firebase.app().options.projectId})');
   }
 }

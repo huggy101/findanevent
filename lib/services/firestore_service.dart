@@ -14,14 +14,14 @@ class FirestoreService {
         .get();
 
     // 🔍 Debugging lines
-    print("Number of docs: ${q.docs.length}");
-    for (var doc in q.docs) {
-      print("Doc ID: ${doc.id}, data: ${doc.data()}");
-    }
+    // print("Number of docs: ${q.docs.length}");
+    // for (var doc in q.docs) {
+    //   print("Doc ID: ${doc.id}, data: ${doc.data()}");
+    // }
 
     // Now map into your model
     final eventTypes = q.docs.map(EventTypeModel.fromDoc).toList();
-    print("Mapped eventTypes: $eventTypes");
+    // print("Mapped eventTypes: $eventTypes");
 
     return eventTypes;
   }
