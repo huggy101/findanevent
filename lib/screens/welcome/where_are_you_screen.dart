@@ -3,27 +3,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/settings_models.dart' as models;
 import '../../providers/selection_providers.dart' as prov;
-import '../../providers/app_providers.dart'; // <-- geo & w3w providers live here
+import '../../providers/app_providers.dart';
 import '../../core/validators.dart';
 
 class WhereAreYouScreen extends ConsumerStatefulWidget {
   const WhereAreYouScreen({super.key});
 
   @override
-  ConsumerState<WhereAreYouScreen> createState() => _WhereAreYouScreenState();
+  ConsumerState<WhereAreYouScreen> createState() =>
+      _WhereAreYouScreenState();
 }
 
 class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
   late models.LocationMode _mode;
-  models.SpecifiedLocationKind _kind = models.SpecifiedLocationKind.postcode;
+  models.SpecifiedLocationKind _kind =
+      models.SpecifiedLocationKind.postcode;
+
   final TextEditingController _ctrl = TextEditingController();
   bool _loadingLocation = false;
 
   @override
   void initState() {
     super.initState();
+
     final settings = ref.read(prov.searchSettingsProvider);
     _mode = settings.locationMode;
+
     if (settings.specifiedLocation != null) {
       _kind = settings.specifiedLocation!.kind;
       _ctrl.text = settings.specifiedLocation!.value;
@@ -60,12 +65,16 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
           break;
       }
 
+      if (!mounted) return;
+
       setState(() {
         _ctrl.text = value;
       });
     } catch (e) {
+      if (!mounted) return;
       _show(context, 'Could not fetch location: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _loadingLocation = false);
     }
   }
@@ -79,44 +88,50 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RadioListTile<models.LocationMode>(
-              title: const Text('Current Location'),
+            _buildModeTile(
+              title: 'Current Location',
               value: models.LocationMode.current,
-              groupValue: _mode,
-              onChanged: (v) => setState(() => _mode = v!),
             ),
-            RadioListTile<models.LocationMode>(
-              title: const Text('Specify Location'),
+            _buildModeTile(
+              title: 'Specify Location',
               value: models.LocationMode.specified,
-              groupValue: _mode,
-              onChanged: (v) => setState(() => _mode = v!),
             ),
+
             if (_mode == models.LocationMode.specified) ...[
               const SizedBox(height: 12),
+
               Wrap(
                 spacing: 8,
                 children: [
                   ChoiceChip(
                     label: const Text('Postcode'),
-                    selected: _kind == models.SpecifiedLocationKind.postcode,
-                    onSelected: (_) => setState(
-                        () => _kind = models.SpecifiedLocationKind.postcode),
+                    selected: _kind ==
+                        models.SpecifiedLocationKind.postcode,
+                    onSelected: (_) => setState(() {
+                      _kind = models.SpecifiedLocationKind.postcode;
+                    }),
                   ),
                   ChoiceChip(
                     label: const Text('Plus Code'),
-                    selected: _kind == models.SpecifiedLocationKind.plusCode,
-                    onSelected: (_) => setState(
-                        () => _kind = models.SpecifiedLocationKind.plusCode),
+                    selected: _kind ==
+                        models.SpecifiedLocationKind.plusCode,
+                    onSelected: (_) => setState(() {
+                      _kind = models.SpecifiedLocationKind.plusCode;
+                    }),
                   ),
                   ChoiceChip(
                     label: const Text('///three.words'),
-                    selected: _kind == models.SpecifiedLocationKind.threeWords,
-                    onSelected: (_) => setState(
-                        () => _kind = models.SpecifiedLocationKind.threeWords),
+                    selected: _kind ==
+                        models.SpecifiedLocationKind.threeWords,
+                    onSelected: (_) => setState(() {
+                      _kind = models.SpecifiedLocationKind.threeWords;
+                    }),
                   ),
                 ],
               ),
+
               const SizedBox(height: 12),
+
               TextField(
                 controller: _ctrl,
                 decoration: InputDecoration(
@@ -131,48 +146,63 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                   border: const OutlineInputBorder(),
                 ),
               ),
+
               const SizedBox(height: 8),
+
               Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton.icon(
-                  onPressed: _loadingLocation ? null : _fillFromCurrentLocation,
+                  onPressed:
+                      _loadingLocation ? null : _fillFromCurrentLocation,
                   icon: _loadingLocation
                       ? const SizedBox(
                           height: 16,
                           width: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Icon(Icons.my_location),
                   label: const Text("Use Current Location"),
                 ),
               ),
             ],
+
             const Spacer(),
+
             ElevatedButton(
               onPressed: () {
-                final notifier = ref.read(prov.searchSettingsProvider.notifier);
+                final notifier =
+                    ref.read(prov.searchSettingsProvider.notifier);
 
                 if (_mode == models.LocationMode.current) {
-                  notifier.setLocationMode(models.LocationMode.current);
+                  notifier.setLocationMode(
+                    models.LocationMode.current,
+                  );
                 } else {
                   final value = _ctrl.text.trim();
 
                   switch (_kind) {
                     case models.SpecifiedLocationKind.postcode:
                       if (!Validators.isPostcode(value)) {
-                        _show(context, 'Please enter a valid UK postcode');
+                        _show(context,
+                            'Please enter a valid UK postcode');
                         return;
                       }
                       break;
+
                     case models.SpecifiedLocationKind.plusCode:
                       if (!Validators.isPlusCode(value)) {
-                        _show(context, 'Please enter a valid Plus Code');
+                        _show(context,
+                            'Please enter a valid Plus Code');
                         return;
                       }
                       break;
+
                     case models.SpecifiedLocationKind.threeWords:
                       if (!Validators.isThreeWords(value)) {
-                        _show(context, 'Enter three.words.address');
+                        _show(context,
+                            'Enter three.words.address');
                         return;
                       }
                       break;
@@ -180,7 +210,8 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
 
                   notifier.setLocationMode(
                     models.LocationMode.specified,
-                    specified: models.SpecifiedLocation(_kind, value),
+                    specified:
+                        models.SpecifiedLocation(_kind, value),
                   );
                 }
 
@@ -194,6 +225,27 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
     );
   }
 
-  void _show(BuildContext c, String message) =>
-      ScaffoldMessenger.of(c).showSnackBar(SnackBar(content: Text(message)));
+  Widget _buildModeTile({
+    required String title,
+    required models.LocationMode value,
+  }) {
+    final selected = _mode == value;
+
+    return ListTile(
+      title: Text(title),
+      leading: Icon(
+        selected
+            ? Icons.radio_button_checked
+            : Icons.radio_button_off,
+      ),
+      onTap: () {
+        setState(() => _mode = value);
+      },
+    );
+  }
+
+  void _show(BuildContext c, String message) {
+    ScaffoldMessenger.of(c)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 }
