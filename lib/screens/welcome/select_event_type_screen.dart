@@ -18,24 +18,27 @@ class SelectEventTypeScreen extends ConsumerWidget {
         data: (types) {
           return ListView(
             children: types.map((t) {
-              return RadioListTile<String>(
+              final isSelected = settings.eventTypeId == t.id;
+
+              return ListTile(
                 title: Text(t.label),
-                value: t.id,
-                groupValue: settings.eventTypeId,
-                onChanged: (v) {
-                  if (v != null) {
-                    ref
-                        .read(searchSettingsProvider.notifier)
-                        .setEventType(v);
-                    Navigator.of(context).pop();
-                  }
+                trailing: Icon(
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                ),
+                onTap: () {
+                  ref
+                      .read(searchSettingsProvider.notifier)
+                      .setEventType(t.id);
+
+                  Navigator.of(context).pop();
                 },
               );
             }).toList(),
           );
         },
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => Center(
           child: Text('Error loading event types: $e'),
         ),

@@ -3,7 +3,7 @@ import '../models/settings_models.dart';
 
 /// === StateNotifier to manage search settings ===
 class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
-  SearchSettingsNotifier(SearchSettings initialState) : super(initialState);
+  SearchSettingsNotifier(super.initialState);
 
   void setEventType(String typeId) {
     state = state.copyWith(eventTypeId: typeId);
@@ -55,17 +55,14 @@ final searchSettingsProvider =
   final start = DateTime(now.year, now.month, now.day);
   final end = start.add(const Duration(days: 7));
 
-  return SearchSettings(
+  final initialState = SearchSettings(
     eventTypeId: 'openMicJam', // default Firestore ID
     locationMode: LocationMode.current,
     startDate: start,
     endDate: end,
     proximityScope: ProximityScope.miles,
     miles: 20,
-  ).let((initial) => SearchSettingsNotifier(initial));
-});
+  );
 
-/// Extension helper to call constructor with initial value
-extension Let<T> on T {
-  R let<R>(R Function(T) op) => op(this);
-}
+  return SearchSettingsNotifier(initialState);
+});
