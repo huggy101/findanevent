@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../models/settings_models.dart';
 import '../../providers/selection_providers.dart';
 import '../../providers/terms_provider.dart';
@@ -9,7 +10,6 @@ import '../../providers/event_type_providers.dart';
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
-  // Helper to display the specified location nicely
   String _locationLabel(SpecifiedLocation loc) {
     switch (loc.kind) {
       case SpecifiedLocationKind.postcode:
@@ -26,7 +26,6 @@ class WelcomeScreen extends ConsumerWidget {
     final settings = ref.watch(searchSettingsProvider);
     final selectedEventType = ref.watch(selectedEventTypeProvider);
 
-    // Build proximity label dynamically
     String proximityLabel;
     switch (settings.proximityScope) {
       case ProximityScope.miles:
@@ -41,74 +40,112 @@ class WelcomeScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 40),
-            Center(
-              child: Text(
-                'FIND A …',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 24),
-            OutlinedButton(
-              onPressed: () => context.push('/select'),
-              child: Text(selectedEventType?.label ?? settings.eventTypeId),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.push('/where'),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // 🌿 TOP CONTENT
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+
+                  Center(
                     child: Text(
-                      settings.locationMode == LocationMode.current
-                          ? 'Current Location'
-                          : settings.specifiedLocation != null
-                              ? _locationLabel(settings.specifiedLocation!)
-                              : 'Location Specified',
+                      'FIND A …',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.push('/change-date'),
-                    child: Text(settings.rangeLabel()),
+
+                  const SizedBox(height: 24),
+
+                  OutlinedButton(
+                    onPressed: () => context.push('/select'),
+                    child: Text(
+                      selectedEventType?.label ?? settings.eventTypeId,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => context.push('/proximity'),
-              child: Text(proximityLabel),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.push('/events'),
-              child: const Text('Find The Events'),
-            ),
-            const Spacer(),
-            OutlinedButton(
-              onPressed: () {
-                ref.read(termsAcceptedProvider.notifier).resetForTesting();
-                context.push('/terms');
-              },
-              child: const Text("Force Terms Again (Testing)"),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => context.push('/login'),
-              child: const Text('Login/Register – Needed For Updating Events'),
-            ),
-          ],
+
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.push('/where'),
+                          child: Text(
+                            settings.locationMode ==
+                                    LocationMode.current
+                                ? 'Current Location'
+                                : settings.specifiedLocation != null
+                                    ? _locationLabel(
+                                        settings.specifiedLocation!,
+                                      )
+                                    : 'Location Specified',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton(
+                        onPressed: () => context.push('/proximity'),
+                        child: Text(proximityLabel),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => context.push('/change-date'),
+                      child: Text(settings.rangeLabel()),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  ElevatedButton(
+                    onPressed: () => context.push('/events'),
+                    child: const Text('Find The Events'),
+                  ),
+                ],
+              ),
+
+              // 🌿 PUSH BOTTOM SECTION DOWN
+              const Spacer(),
+
+              // 🌙 BOTTOM BUTTONS
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  OutlinedButton(
+                    onPressed: () {
+                      ref
+                          .read(termsAcceptedProvider.notifier)
+                          .resetForTesting();
+                      context.push('/terms');
+                    },
+                    child: const Text("Force Terms Again (Testing)"),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  OutlinedButton(
+                    onPressed: () => context.push('/login'),
+                    child: const Text(
+                      'Login/Register – Needed For Updating Events',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
