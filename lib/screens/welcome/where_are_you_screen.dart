@@ -10,14 +10,12 @@ class WhereAreYouScreen extends ConsumerStatefulWidget {
   const WhereAreYouScreen({super.key});
 
   @override
-  ConsumerState<WhereAreYouScreen> createState() =>
-      _WhereAreYouScreenState();
+  ConsumerState<WhereAreYouScreen> createState() => _WhereAreYouScreenState();
 }
 
 class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
   late models.LocationMode _mode;
-  models.SpecifiedLocationKind _kind =
-      models.SpecifiedLocationKind.postcode;
+  models.SpecifiedLocationKind _kind = models.SpecifiedLocationKind.postcode;
 
   final TextEditingController _ctrl = TextEditingController();
   bool _loadingLocation = false;
@@ -81,9 +79,14 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
     } catch (e) {
       if (!mounted) return;
       _show(context, 'Could not fetch location: $e');
+      // } finally {
+      //   if (!mounted) return;
+      //   setState(() => _loadingLocation = false);
+      // }
     } finally {
-      if (!mounted) return;
-      setState(() => _loadingLocation = false);
+      if (mounted) {
+        setState(() => _loadingLocation = false);
+      }
     }
   }
 
@@ -113,24 +116,21 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                 children: [
                   ChoiceChip(
                     label: const Text('Postcode'),
-                    selected: _kind ==
-                        models.SpecifiedLocationKind.postcode,
+                    selected: _kind == models.SpecifiedLocationKind.postcode,
                     onSelected: (_) => setState(() {
                       _kind = models.SpecifiedLocationKind.postcode;
                     }),
                   ),
                   ChoiceChip(
                     label: const Text('Plus Code'),
-                    selected: _kind ==
-                        models.SpecifiedLocationKind.plusCode,
+                    selected: _kind == models.SpecifiedLocationKind.plusCode,
                     onSelected: (_) => setState(() {
                       _kind = models.SpecifiedLocationKind.plusCode;
                     }),
                   ),
                   ChoiceChip(
                     label: const Text('///three.words'),
-                    selected: _kind ==
-                        models.SpecifiedLocationKind.threeWords,
+                    selected: _kind == models.SpecifiedLocationKind.threeWords,
                     onSelected: (_) => setState(() {
                       _kind = models.SpecifiedLocationKind.threeWords;
                     }),
@@ -160,8 +160,7 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton.icon(
-                  onPressed:
-                      _loadingLocation ? null : _fillFromCurrentLocation,
+                  onPressed: _loadingLocation ? null : _fillFromCurrentLocation,
                   icon: _loadingLocation
                       ? const SizedBox(
                           height: 16,
@@ -180,37 +179,33 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
             if (_mode == models.LocationMode.current || _hasCurrentLocation)
               ElevatedButton(
                 onPressed: () {
-                  final notifier =
-                      ref.read(prov.searchSettingsProvider.notifier);
+                  final notifier = ref.read(
+                    prov.searchSettingsProvider.notifier,
+                  );
 
                   if (_mode == models.LocationMode.current) {
-                    notifier.setLocationMode(
-                      models.LocationMode.current,
-                    );
+                    notifier.setLocationMode(models.LocationMode.current);
                   } else {
                     final value = _ctrl.text.trim();
 
                     switch (_kind) {
                       case models.SpecifiedLocationKind.postcode:
                         if (!Validators.isPostcode(value)) {
-                          _show(context,
-                              'Please enter a valid UK postcode');
+                          _show(context, 'Please enter a valid UK postcode');
                           return;
                         }
                         break;
 
                       case models.SpecifiedLocationKind.plusCode:
                         if (!Validators.isPlusCode(value)) {
-                          _show(context,
-                              'Please enter a valid Plus Code');
+                          _show(context, 'Please enter a valid Plus Code');
                           return;
                         }
                         break;
 
                       case models.SpecifiedLocationKind.threeWords:
                         if (!Validators.isThreeWords(value)) {
-                          _show(context,
-                              'Enter three.words.address');
+                          _show(context, 'Enter three.words.address');
                           return;
                         }
                         break;
@@ -218,8 +213,7 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
 
                     notifier.setLocationMode(
                       models.LocationMode.specified,
-                      specified:
-                          models.SpecifiedLocation(_kind, value),
+                      specified: models.SpecifiedLocation(_kind, value),
                     );
                   }
 
@@ -242,9 +236,7 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
     return ListTile(
       title: Text(title),
       leading: Icon(
-        selected
-            ? Icons.radio_button_checked
-            : Icons.radio_button_off,
+        selected ? Icons.radio_button_checked : Icons.radio_button_off,
       ),
       onTap: () {
         setState(() {
@@ -259,7 +251,6 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
   }
 
   void _show(BuildContext c, String message) {
-    ScaffoldMessenger.of(c)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(c).showSnackBar(SnackBar(content: Text(message)));
   }
 }
