@@ -22,6 +22,9 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
   final TextEditingController _ctrl = TextEditingController();
   bool _loadingLocation = false;
 
+  // 🌿 NEW: controls Save visibility
+  bool _hasCurrentLocation = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,10 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
     if (settings.specifiedLocation != null) {
       _kind = settings.specifiedLocation!.kind;
       _ctrl.text = settings.specifiedLocation!.value;
+    }
+
+    if (_mode == models.LocationMode.current) {
+      _hasCurrentLocation = true;
     }
   }
 
@@ -69,6 +76,7 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
 
       setState(() {
         _ctrl.text = value;
+        _hasCurrentLocation = true; // 🌿 unlock Save
       });
     } catch (e) {
       if (!mounted) return;
@@ -158,9 +166,7 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
                       ? const SizedBox(
                           height: 16,
                           width: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.my_location),
                   label: const Text("Use Current Location"),
@@ -170,55 +176,57 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
 
             const Spacer(),
 
-            ElevatedButton(
-              onPressed: () {
-                final notifier =
-                    ref.read(prov.searchSettingsProvider.notifier);
+            // 🌿 SAVE BUTTON (conditional)
+            if (_mode == models.LocationMode.current || _hasCurrentLocation)
+              ElevatedButton(
+                onPressed: () {
+                  final notifier =
+                      ref.read(prov.searchSettingsProvider.notifier);
 
-                if (_mode == models.LocationMode.current) {
-                  notifier.setLocationMode(
-                    models.LocationMode.current,
-                  );
-                } else {
-                  final value = _ctrl.text.trim();
+                  if (_mode == models.LocationMode.current) {
+                    notifier.setLocationMode(
+                      models.LocationMode.current,
+                    );
+                  } else {
+                    final value = _ctrl.text.trim();
 
-                  switch (_kind) {
-                    case models.SpecifiedLocationKind.postcode:
-                      if (!Validators.isPostcode(value)) {
-                        _show(context,
-                            'Please enter a valid UK postcode');
-                        return;
-                      }
-                      break;
+                    switch (_kind) {
+                      case models.SpecifiedLocationKind.postcode:
+                        if (!Validators.isPostcode(value)) {
+                          _show(context,
+                              'Please enter a valid UK postcode');
+                          return;
+                        }
+                        break;
 
-                    case models.SpecifiedLocationKind.plusCode:
-                      if (!Validators.isPlusCode(value)) {
-                        _show(context,
-                            'Please enter a valid Plus Code');
-                        return;
-                      }
-                      break;
+                      case models.SpecifiedLocationKind.plusCode:
+                        if (!Validators.isPlusCode(value)) {
+                          _show(context,
+                              'Please enter a valid Plus Code');
+                          return;
+                        }
+                        break;
 
-                    case models.SpecifiedLocationKind.threeWords:
-                      if (!Validators.isThreeWords(value)) {
-                        _show(context,
-                            'Enter three.words.address');
-                        return;
-                      }
-                      break;
+                      case models.SpecifiedLocationKind.threeWords:
+                        if (!Validators.isThreeWords(value)) {
+                          _show(context,
+                              'Enter three.words.address');
+                          return;
+                        }
+                        break;
+                    }
+
+                    notifier.setLocationMode(
+                      models.LocationMode.specified,
+                      specified:
+                          models.SpecifiedLocation(_kind, value),
+                    );
                   }
 
-                  notifier.setLocationMode(
-                    models.LocationMode.specified,
-                    specified:
-                        models.SpecifiedLocation(_kind, value),
-                  );
-                }
-
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
+                  Navigator.pop(context);
+                },
+                child: const Text('Save'),
+              ),
           ],
         ),
       ),
@@ -239,7 +247,13 @@ class _WhereAreYouScreenState extends ConsumerState<WhereAreYouScreen> {
             : Icons.radio_button_off,
       ),
       onTap: () {
-        setState(() => _mode = value);
+        setState(() {
+          _mode = value;
+
+          if (_mode == models.LocationMode.specified) {
+            _hasCurrentLocation = false;
+          }
+        });
       },
     );
   }

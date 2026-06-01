@@ -65,7 +65,7 @@ class SearchSettings {
             3 => 'rd',
             _ => 'th',
           };
-    final weekday = DateFormat('EEEE').format(d); // e.g. Monday
+    final weekday = DateFormat('EEE').format(d); // e.g. Mon
     final monthShort = DateFormat('MMM').format(d); // e.g. Sep
     // return '$weekday ${day}$suffix $monthShort ${d.year}';
     return '$weekday $day$suffix $monthShort ${d.year}';

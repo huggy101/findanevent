@@ -3,10 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-// Import your providers
+// Providers
 import 'providers/terms_provider.dart';
+import 'providers/app_ready_provider.dart';
 
-// Import your screens
+// Screens
 import 'screens/splash/splash_screen.dart';
 import 'screens/welcome/welcome_screen.dart';
 import 'screens/welcome/select_event_type_screen.dart';
@@ -16,8 +17,7 @@ import 'screens/welcome/proximity_screen.dart';
 import 'screens/list_of_events/list_of_events_screen.dart';
 import 'screens/terms/terms_screen.dart';
 
-// import 'screens/login/login_screen.dart';
-
+// Services
 import 'services/firebase_service.dart';
 
 void main() async {
@@ -38,9 +38,11 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final termsAccepted = ref.watch(termsAcceptedProvider);
+    final appReady = ref.watch(appReadyProvider);
 
     final router = GoRouter(
       initialLocation: '/splash',
+
       routes: [
         GoRoute(
           path: '/splash',
@@ -75,11 +77,26 @@ class MyApp extends ConsumerWidget {
           builder: (context, state) => const TermsScreen(),
         ),
       ],
-      redirect: (context, state) {
-        final isGoingToTerms = state.fullPath == '/terms';
 
-        if (!termsAccepted && !isGoingToTerms) return '/terms';
-        if (termsAccepted && isGoingToTerms) return '/welcome';
+      redirect: (context, state) {
+        final location = state.matchedLocation;
+        final isSplash = location == '/splash';
+        final isTerms = location == '/terms';
+
+        // 🌿 BLOCK EVERYTHING UNTIL SPLASH FINISHES
+        if (!appReady) {
+          return isSplash ? null : '/splash';
+        }
+
+        // 🌙 AFTER SPLASH → ENSURE WE LEAVE IT
+        if (isSplash) {
+          return '/welcome';
+        }
+
+        // 🌙 TERMS LOGIC AFTER BOOT
+        if (!termsAccepted && !isTerms) return '/terms';
+        if (termsAccepted && isTerms) return '/welcome';
+
         return null;
       },
     );
