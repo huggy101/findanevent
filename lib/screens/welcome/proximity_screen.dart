@@ -13,20 +13,36 @@ class ProximityScreen extends ConsumerStatefulWidget {
 
 class _ProximityScreenState extends ConsumerState<ProximityScreen> {
   late ProximityScope _selected;
+  late ProximityScope _initialSelected;
   late TextEditingController _milesController;
+  late String _initialMilesText;
 
   @override
   void initState() {
     super.initState();
     final settings = ref.read(searchSettingsProvider);
     _selected = settings.proximityScope;
-    _milesController = TextEditingController(text: settings.miles.toString());
+    _initialSelected = settings.proximityScope;
+    _initialMilesText = settings.miles.toString();
+    _milesController = TextEditingController(text: _initialMilesText)
+      ..addListener(_handleMilesChanged);
   }
 
   @override
   void dispose() {
+    _milesController.removeListener(_handleMilesChanged);
     _milesController.dispose();
     super.dispose();
+  }
+
+  bool get _hasChanges =>
+      _selected != _initialSelected ||
+      _milesController.text != _initialMilesText;
+
+  void _handleMilesChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -89,20 +105,21 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
 
             const Spacer(),
 
-            ElevatedButton(
-              onPressed: () {
-                final notifier = ref.read(searchSettingsProvider.notifier);
+            if (_hasChanges)
+              ElevatedButton(
+                onPressed: () {
+                  final notifier = ref.read(searchSettingsProvider.notifier);
 
-                if (_selected == ProximityScope.miles) {
-                  final miles = int.tryParse(_milesController.text) ?? 20;
-                  notifier.setMiles(miles);
-                }
+                  if (_selected == ProximityScope.miles) {
+                    final miles = int.tryParse(_milesController.text) ?? 20;
+                    notifier.setMiles(miles);
+                  }
 
-                notifier.setProximityScope(_selected);
-                Navigator.pop(context);
-              },
-              child: const Text("Save"),
-            ),
+                  notifier.setProximityScope(_selected);
+                  Navigator.pop(context);
+                },
+                child: const Text("Save"),
+              ),
           ],
         ),
       ),
