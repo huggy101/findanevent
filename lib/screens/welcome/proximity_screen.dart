@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../providers/selection_providers.dart';
 import '../../models/settings_models.dart';
 
@@ -8,41 +9,45 @@ class ProximityScreen extends ConsumerStatefulWidget {
   const ProximityScreen({super.key});
 
   @override
-  ConsumerState<ProximityScreen> createState() => _ProximityScreenState();
+  ConsumerState<ProximityScreen> createState() =>
+      _ProximityScreenState();
 }
 
 class _ProximityScreenState extends ConsumerState<ProximityScreen> {
   late ProximityScope _selected;
-  late ProximityScope _initialSelected;
   late TextEditingController _milesController;
-  late String _initialMilesText;
+
+  // 🌿 snapshot of initial state
+  late ProximityScope _initialSelected;
+  late int _initialMiles;
 
   @override
   void initState() {
     super.initState();
+
     final settings = ref.read(searchSettingsProvider);
+
     _selected = settings.proximityScope;
+    _milesController =
+        TextEditingController(text: settings.miles.toString());
+
+    // store initial snapshot
     _initialSelected = settings.proximityScope;
-    _initialMilesText = settings.miles.toString();
-    _milesController = TextEditingController(text: _initialMilesText)
-      ..addListener(_handleMilesChanged);
+    _initialMiles = settings.miles;
   }
 
   @override
   void dispose() {
-    _milesController.removeListener(_handleMilesChanged);
     _milesController.dispose();
     super.dispose();
   }
 
-  bool get _hasChanges =>
-      _selected != _initialSelected ||
-      _milesController.text != _initialMilesText;
+  bool get _hasChanged {
+    final currentMiles =
+        int.tryParse(_milesController.text) ?? _initialMiles;
 
-  void _handleMilesChanged() {
-    if (mounted) {
-      setState(() {});
-    }
+    return _selected != _initialSelected ||
+        currentMiles != _initialMiles;
   }
 
   @override
@@ -53,7 +58,6 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Miles option (number field + literal "miles" outside)
             RadioMenuButton<ProximityScope>(
               value: ProximityScope.miles,
               groupValue: _selected,
@@ -66,17 +70,21 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
                     width: 70,
                     child: TextField(
                       controller: _milesController,
-                      enabled: _selected == ProximityScope.miles,
+                      enabled:
+                          _selected == ProximityScope.miles,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
                         isDense: true,
                         border: OutlineInputBorder(),
                       ),
                       onTap: () {
-                        // If they tap the field, select the "miles" option automatically
                         if (_selected != ProximityScope.miles) {
-                          setState(() => _selected = ProximityScope.miles);
+                          setState(
+                              () => _selected = ProximityScope.miles);
                         }
                       },
                     ),
@@ -87,7 +95,6 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
               ),
             ),
 
-            // Nationwide option
             RadioMenuButton<ProximityScope>(
               value: ProximityScope.nationwide,
               groupValue: _selected,
@@ -95,7 +102,6 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
               child: const Text("Nationwide"),
             ),
 
-            // Worldwide option
             RadioMenuButton<ProximityScope>(
               value: ProximityScope.worldwide,
               groupValue: _selected,
@@ -103,19 +109,23 @@ class _ProximityScreenState extends ConsumerState<ProximityScreen> {
               child: const Text("Worldwide"),
             ),
 
-            const Spacer(),
+            // const Spacer(),
 
-            if (_hasChanges)
+            /// 🌿 SAVE ONLY IF CHANGED
+            if (_hasChanged)
               ElevatedButton(
                 onPressed: () {
-                  final notifier = ref.read(searchSettingsProvider.notifier);
+                  final notifier =
+                      ref.read(searchSettingsProvider.notifier);
 
                   if (_selected == ProximityScope.miles) {
-                    final miles = int.tryParse(_milesController.text) ?? 20;
+                    final miles =
+                        int.tryParse(_milesController.text) ?? 20;
                     notifier.setMiles(miles);
                   }
 
                   notifier.setProximityScope(_selected);
+
                   Navigator.pop(context);
                 },
                 child: const Text("Save"),
