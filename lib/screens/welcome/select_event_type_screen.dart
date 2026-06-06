@@ -13,35 +13,35 @@ class SelectEventTypeScreen extends ConsumerWidget {
     final eventTypesAsync = ref.watch(eventTypesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Select Event Type')),
+      appBar: AppBar(
+        title: const Text('Select Event Types'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
       body: eventTypesAsync.when(
         data: (types) {
           return ListView(
             children: types.map((t) {
-              final isSelected = settings.eventTypeId == t.id;
+              final isSelected = settings.eventTypeIds.contains(t.id);
 
-              return ListTile(
+              return CheckboxListTile(
                 title: Text(t.label),
-                trailing: Icon(
-                  isSelected
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                ),
-                onTap: () {
+                value: isSelected,
+                onChanged: (_) {
                   ref
                       .read(searchSettingsProvider.notifier)
-                      .setEventType(t.id);
-
-                  Navigator.of(context).pop();
+                      .toggleEventType(t.id);
                 },
               );
             }).toList(),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(
-          child: Text('Error loading event types: $e'),
-        ),
+        error: (e, st) => Center(child: Text('Error loading event types: $e')),
       ),
     );
   }

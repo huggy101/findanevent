@@ -5,8 +5,18 @@ import '../models/settings_models.dart';
 class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
   SearchSettingsNotifier(super.initialState);
 
-  void setEventType(String typeId) {
-    state = state.copyWith(eventTypeId: typeId);
+  void setEventTypes(List<String> typeIds) {
+    state = state.copyWith(eventTypeIds: List.unmodifiable(typeIds));
+  }
+
+  void toggleEventType(String typeId) {
+    final next = [...state.eventTypeIds];
+    if (next.contains(typeId)) {
+      next.remove(typeId);
+    } else {
+      next.add(typeId);
+    }
+    state = state.copyWith(eventTypeIds: List.unmodifiable(next));
   }
 
   void setStartDate(DateTime date) {
@@ -26,10 +36,7 @@ class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
   }
 
   void setLocationMode(LocationMode mode, {SpecifiedLocation? specified}) {
-    state = state.copyWith(
-      locationMode: mode,
-      specifiedLocation: specified,
-    );
+    state = state.copyWith(locationMode: mode, specifiedLocation: specified);
   }
 
   void setSpecifiedLocation(SpecifiedLocation loc) {
@@ -41,28 +48,25 @@ class SearchSettingsNotifier extends StateNotifier<SearchSettings> {
   }
 
   void setMiles(int miles) {
-    state = state.copyWith(
-      miles: miles,
-      proximityScope: ProximityScope.miles,
-    );
+    state = state.copyWith(miles: miles, proximityScope: ProximityScope.miles);
   }
 }
 
 /// === Provider ===
 final searchSettingsProvider =
     StateNotifierProvider<SearchSettingsNotifier, SearchSettings>((ref) {
-  final now = DateTime.now();
-  final start = DateTime(now.year, now.month, now.day);
-  final end = start.add(const Duration(days: 7));
+      final now = DateTime.now();
+      final start = DateTime(now.year, now.month, now.day);
+      final end = start.add(const Duration(days: 7));
 
-  final initialState = SearchSettings(
-    eventTypeId: 'openMicJam', // default Firestore ID
-    locationMode: LocationMode.current,
-    startDate: start,
-    endDate: end,
-    proximityScope: ProximityScope.miles,
-    miles: 20,
-  );
+      final initialState = SearchSettings(
+        eventTypeIds: const ['openMicJam'], // default Firestore ID
+        locationMode: LocationMode.current,
+        startDate: start,
+        endDate: end,
+        proximityScope: ProximityScope.miles,
+        miles: 20,
+      );
 
-  return SearchSettingsNotifier(initialState);
-});
+      return SearchSettingsNotifier(initialState);
+    });

@@ -6,19 +6,27 @@ class VenueEventRepository {
   VenueEventRepository(this._fs);
 
   Future<List<(EventItem e, Venue v)>> eventsWithVenues({
-    required String typeId,
+    required List<String> typeIds,
     required DateTime from,
   }) async {
-    // ✅ Call the actual FirestoreService method
-    final events = await _fs.getEvents(typeId: typeId, from: from);
+    final eventsById = <String, EventItem>{};
+    for (final typeId in typeIds) {
+      final events = await _fs.getEvents(typeId: typeId, from: from);
+      for (final event in events) {
+        eventsById[event.id] = event;
+      }
+    }
+
+    final events = eventsById.values.toList()
+      ..sort((a, b) => a.start.compareTo(b.start));
 
     final venuesCache = <String, Venue>{};
     final out = <(EventItem, Venue)>[];
 
     for (final e in events) {
-      // fetch & cache venue; throw helpful error if absent
-      final v = venuesCache[e.venueId] ??= await _fs.getVenue(e.venueId)
-          ?? (throw StateError('Venue not found for id ${e.venueId}'));
+      final v = venuesCache[e.venueId] ??=
+          await _fs.getVenue(e.venueId) ??
+          (throw StateError('Venue not found for id ${e.venueId}'));
       out.add((e, v));
     }
 

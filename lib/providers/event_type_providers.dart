@@ -3,32 +3,31 @@ import '../models/event_models.dart';
 import '../services/firestore_service.dart';
 import 'selection_providers.dart';
 
-/// Provide the FirestoreService instance
+/// Provide the FirestoreService instance.
 final firestoreServiceProvider = Provider<FirestoreService>((ref) {
   return FirestoreService();
 });
 
-/// Fetch all event types from Firestore
+/// Fetch all event types from Firestore.
 final eventTypesProvider = FutureProvider<List<EventTypeModel>>((ref) async {
   final fs = ref.read(firestoreServiceProvider);
   return fs.getEventTypes();
 });
 
-/// Get the currently selected EventTypeModel based on search settings
-final selectedEventTypeProvider = Provider<EventTypeModel?>((ref) {
+/// Get the currently selected EventTypeModels based on search settings.
+final selectedEventTypesProvider = Provider<List<EventTypeModel>>((ref) {
   final eventTypesAsync = ref.watch(eventTypesProvider);
   final settings = ref.watch(searchSettingsProvider);
 
   return eventTypesAsync.maybeWhen(
-    data: (types) => types.firstWhere(
-      (t) => t.id == settings.eventTypeId,
-      orElse: () => EventTypeModel(
-        id: settings.eventTypeId,
-        label: settings.eventTypeId,
-        order: 999, // 👈 fallback order if not found in Firestore
-      ),
-    ),
-    orElse: () => null,
+    data: (types) => settings.eventTypeIds
+        .map((typeId) {
+          return types.firstWhere(
+            (t) => t.id == typeId,
+            orElse: () => EventTypeModel(id: typeId, label: typeId, order: 999),
+          );
+        })
+        .toList(growable: false),
+    orElse: () => const [],
   );
 });
-

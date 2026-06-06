@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/settings_models.dart';
+import '../../models/event_models.dart';
 import '../../providers/selection_providers.dart';
 import '../../providers/terms_provider.dart';
 import '../../providers/event_type_providers.dart';
@@ -23,10 +24,26 @@ class WelcomeScreen extends ConsumerWidget {
     }
   }
 
+  String _eventTypesLabel(
+    List<EventTypeModel> selectedTypes,
+    List<String> selectedIds,
+  ) {
+    if (selectedTypes.isEmpty && selectedIds.isEmpty) {
+      return 'Select Event Types';
+    }
+
+    final labels = selectedTypes.isNotEmpty
+        ? selectedTypes.map((t) => t.label).toList()
+        : selectedIds;
+
+    if (labels.length <= 2) return labels.join(', ');
+    return '${labels.take(2).join(', ')} +${labels.length - 2} more';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(searchSettingsProvider);
-    final selectedEventType = ref.watch(selectedEventTypeProvider);
+    final selectedEventTypes = ref.watch(selectedEventTypesProvider);
 
     String proximityLabel;
     switch (settings.proximityScope) {
@@ -69,7 +86,10 @@ class WelcomeScreen extends ConsumerWidget {
                       OutlinedButton(
                         onPressed: () => context.push('/select'),
                         child: Text(
-                          selectedEventType?.label ?? settings.eventTypeId,
+                          _eventTypesLabel(
+                            selectedEventTypes,
+                            settings.eventTypeIds,
+                          ),
                         ),
                       ),
 
