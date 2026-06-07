@@ -21,7 +21,6 @@ class EventTypeModel {
   String toString() => 'EventTypeModel(id: $id, label: $label, order: $order)';
 }
 
-
 /// A venue where events take place
 class Venue {
   final String id;
@@ -30,6 +29,17 @@ class Venue {
   final double lat;
   final double lng;
   final String what3words; // optional
+  final String description;
+  final String address;
+  final String venueContactName;
+  final String venuePhoneNumber;
+  final String eventContactName;
+  final String eventContactNumber;
+  final String plusCode;
+  final List<String> parkingDetails;
+  final String socialMediaDetails;
+  final String photoUrl;
+  final String website;
 
   Venue({
     required this.id,
@@ -38,15 +48,37 @@ class Venue {
     required this.lat,
     required this.lng,
     required this.what3words,
+    this.description = '',
+    this.address = '',
+    this.venueContactName = '',
+    this.venuePhoneNumber = '',
+    this.eventContactName = '',
+    this.eventContactNumber = '',
+    this.plusCode = '',
+    this.parkingDetails = const [],
+    this.socialMediaDetails = '',
+    this.photoUrl = '',
+    this.website = '',
   });
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'postcode': postcode,
-        'lat': lat,
-        'lng': lng,
-        'what3words': what3words,
-      };
+    'name': name,
+    'postcode': postcode,
+    'lat': lat,
+    'lng': lng,
+    'what3words': what3words,
+    'description': description,
+    'address': address,
+    'venueContactName': venueContactName,
+    'venuePhoneNumber': venuePhoneNumber,
+    'eventContactName': eventContactName,
+    'eventContactNumber': eventContactNumber,
+    'plusCode': plusCode,
+    'parkingDetails': parkingDetails,
+    'socialMediaDetails': socialMediaDetails,
+    'photoUrl': photoUrl,
+    'website': website,
+  };
 
   factory Venue.fromDoc(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;
@@ -57,6 +89,19 @@ class Venue {
       lat: (d['lat'] ?? 0).toDouble(),
       lng: (d['lng'] ?? 0).toDouble(),
       what3words: d['what3words'] ?? '',
+      description: d['description'] ?? '',
+      address: d['address'] ?? '',
+      venueContactName: d['venueContactName'] ?? '',
+      venuePhoneNumber: d['venuePhoneNumber'] ?? '',
+      eventContactName: d['eventContactName'] ?? '',
+      eventContactNumber: d['eventContactNumber'] ?? '',
+      plusCode: d['plusCode'] ?? '',
+      parkingDetails: (d['parkingDetails'] as List<dynamic>? ?? const [])
+          .whereType<String>()
+          .toList(growable: false),
+      socialMediaDetails: d['socialMediaDetails'] ?? '',
+      photoUrl: d['photoUrl'] ?? '',
+      website: d['website'] ?? '',
     );
   }
 }
@@ -78,11 +123,11 @@ class EventItem {
   });
 
   Map<String, dynamic> toMap() => {
-        'venueId': venueId,
-        'type': typeId,
-        'start': Timestamp.fromDate(start.toUtc()), // ✅ Firestore Timestamp
-        'end': Timestamp.fromDate(end.toUtc()),
-      };
+    'venueId': venueId,
+    'type': typeId,
+    'start': Timestamp.fromDate(start.toUtc()), // ✅ Firestore Timestamp
+    'end': Timestamp.fromDate(end.toUtc()),
+  };
 
   factory EventItem.fromDoc(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;

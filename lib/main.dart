@@ -15,6 +15,7 @@ import 'screens/welcome/where_are_you_screen.dart';
 import 'screens/welcome/change_start_date_screen.dart';
 import 'screens/welcome/proximity_screen.dart';
 import 'screens/list_of_events/list_of_events_screen.dart';
+import 'screens/manage/add_venue_screen.dart';
 import 'screens/terms/terms_screen.dart';
 
 // Services
@@ -25,9 +26,7 @@ void main() async {
 
   await FirebaseService.init();
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -71,6 +70,10 @@ class MyApp extends ConsumerWidget {
         GoRoute(
           path: '/events',
           builder: (context, state) => const ListOfEventsScreen(),
+        ),
+        GoRoute(
+          path: '/add-venue',
+          builder: (context, state) => const AddVenueScreen(),
         ),
         GoRoute(
           path: '/terms',

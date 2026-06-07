@@ -32,6 +32,16 @@ class FirestoreService {
     return q.docs.map(Venue.fromDoc).toList();
   }
 
+  /// Add a venue to Firestore.
+  Future<DocumentReference<Map<String, dynamic>>> addVenue(Venue venue) {
+    return _db.collection('venues').add(venue.toMap());
+  }
+
+  /// Update an existing venue in Firestore.
+  Future<void> updateVenue(Venue venue) {
+    return _db.collection('venues').doc(venue.id).update(venue.toMap());
+  }
+
   /// Fetch events by Firestore type ID and start date
   Future<List<EventItem>> getEvents({
     required String typeId, // 🔑 replaced EventType with string ID
