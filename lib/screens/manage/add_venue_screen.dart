@@ -23,7 +23,8 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
   final _eventContactCtrl = TextEditingController();
   final _eventPhoneCtrl = TextEditingController();
   final _plusCodeCtrl = TextEditingController();
-  final _what3WordsCtrl = TextEditingController();
+  // what3words disabled for venue entry.
+  // final _what3WordsCtrl = TextEditingController();
   final _socialCtrl = TextEditingController();
   final _photoCtrl = TextEditingController();
   final _websiteCtrl = TextEditingController();
@@ -38,7 +39,7 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
   final Set<String> _selectedParking = {};
   List<Venue> _existingVenues = const [];
   bool _loadingExisting = true;
-  bool _loadingLocation = true;
+  bool _loadingLocation = false;
   bool _saving = false;
   bool _fillingFromVenue = false;
   Venue? _matchedVenue;
@@ -51,7 +52,6 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
     _postcodeCtrl.addListener(_syncMatchedVenue);
     _nameCtrl.addListener(_syncMatchedVenue);
     _loadExistingVenues();
-    _fillLocationDefaults();
   }
 
   @override
@@ -67,7 +67,7 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
     _eventContactCtrl.dispose();
     _eventPhoneCtrl.dispose();
     _plusCodeCtrl.dispose();
-    _what3WordsCtrl.dispose();
+    // _what3WordsCtrl.dispose();
     _socialCtrl.dispose();
     _photoCtrl.dispose();
     _websiteCtrl.dispose();
@@ -90,7 +90,7 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
     }
   }
 
-  Future<void> _fillLocationDefaults() async {
+  Future<void> _fillPostcodeFromCurrentLocation() async {
     setState(() => _loadingLocation = true);
     try {
       final geo = ref.read(geoServiceProvider);
@@ -98,10 +98,10 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
       final lat = pos.latitude;
       final lng = pos.longitude;
       final postcode = await geo.reverseGeocodePostcode(lat, lng);
-      final plusCode = await geo.reverseGeocodePlusCode(lat, lng);
-      final what3Words = await ref
-          .read(w3wServiceProvider)
-          .fromCoords(lat, lng);
+      // what3words disabled for venue entry.
+      // final what3Words = await ref
+      //     .read(w3wServiceProvider)
+      //     .fromCoords(lat, lng);
 
       if (!mounted) return;
       _fillingFromVenue = true;
@@ -109,8 +109,7 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
         _lat = lat;
         _lng = lng;
         _postcodeCtrl.text = postcode;
-        _plusCodeCtrl.text = plusCode;
-        _what3WordsCtrl.text = what3Words;
+        // _what3WordsCtrl.text = what3Words;
       });
       _fillingFromVenue = false;
       _syncMatchedVenue();
@@ -160,7 +159,8 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
         postcode: postcode,
         lat: lat,
         lng: lng,
-        what3words: _what3WordsCtrl.text.trim(),
+        // what3words disabled for venue entry.
+        what3words: _matchedVenue?.what3words ?? '',
         description: _descriptionCtrl.text.trim(),
         address: _addressCtrl.text.trim(),
         venueContactName: _venueContactCtrl.text.trim(),
@@ -213,9 +213,7 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
       value.trim().replaceAll(RegExp(r'\s+'), '').toUpperCase();
 
   String _firstSixLetters(String value) {
-    final letters = value
-        .toUpperCase()
-        .replaceAll(RegExp(r'[^A-Z]'), '');
+    final letters = value.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
     return letters.length <= 6 ? letters : letters.substring(0, 6);
   }
 
@@ -261,7 +259,7 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
       _eventContactCtrl.text = venue.eventContactName;
       _eventPhoneCtrl.text = venue.eventContactNumber;
       _plusCodeCtrl.text = venue.plusCode;
-      _what3WordsCtrl.text = venue.what3words;
+      // _what3WordsCtrl.text = venue.what3words;
       _socialCtrl.text = venue.socialMediaDetails;
       _photoCtrl.text = venue.photoUrl;
       _websiteCtrl.text = venue.website;
@@ -292,18 +290,42 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
                     ).colorScheme.surfaceContainerHighest,
                   ),
                 ),
-              _textField(
-                controller: _postcodeCtrl,
-                label: 'Postcode',
-                textCapitalization: TextCapitalization.characters,
-                validator: (value) {
-                  final text = value?.trim() ?? '';
-                  if (text.isEmpty) return 'Enter a postcode';
-                  if (!Validators.isPostcode(text)) {
-                    return 'Enter a valid UK postcode';
-                  }
-                  return null;
-                },
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _textField(
+                      controller: _postcodeCtrl,
+                      label: 'Postcode',
+                      textCapitalization: TextCapitalization.characters,
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isEmpty) return 'Enter a postcode';
+                        if (!Validators.isPostcode(text)) {
+                          return 'Enter a valid UK postcode';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: IconButton.filled(
+                      onPressed: _loadingLocation
+                          ? null
+                          : _fillPostcodeFromCurrentLocation,
+                      tooltip: 'Use Current Location',
+                      icon: _loadingLocation
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location),
+                    ),
+                  ),
+                ],
               ),
               _textField(
                 controller: _nameCtrl,
@@ -352,33 +374,19 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
                 keyboardType: TextInputType.phone,
               ),
               _textField(controller: _plusCodeCtrl, label: 'Plus Code'),
-              _textField(
-                controller: _what3WordsCtrl,
-                label: 'what3words',
-                validator: (value) {
-                  final text = value?.trim() ?? '';
-                  if (text.isEmpty) return null;
-                  if (!Validators.isThreeWords(text)) {
-                    return 'Enter three.words.address';
-                  }
-                  return null;
-                },
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton.icon(
-                  onPressed: _loadingLocation ? null : _fillLocationDefaults,
-                  icon: _loadingLocation
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.my_location),
-                  label: const Text('Use Current Location'),
-                ),
-              ),
-              const SizedBox(height: 12),
+              // what3words disabled for venue entry.
+              // _textField(
+              //   controller: _what3WordsCtrl,
+              //   label: 'what3words',
+              //   validator: (value) {
+              //     final text = value?.trim() ?? '';
+              //     if (text.isEmpty) return null;
+              //     if (!Validators.isThreeWords(text)) {
+              //       return 'Enter three.words.address';
+              //     }
+              //     return null;
+              //   },
+              // ),
               const SizedBox(height: 4),
               Text(
                 'Parking details',
@@ -434,8 +442,8 @@ class _AddVenueScreenState extends ConsumerState<AddVenueScreen> {
                 label: Text(
                   _saving
                       ? (_matchedVenue == null
-                          ? 'Adding Venue'
-                          : 'Updating Venue')
+                            ? 'Adding Venue'
+                            : 'Updating Venue')
                       : (_matchedVenue == null ? 'Add Venue' : 'Update Venue'),
                 ),
               ),
