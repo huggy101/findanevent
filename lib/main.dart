@@ -14,6 +14,7 @@ import 'screens/welcome/select_event_type_screen.dart';
 import 'screens/welcome/where_are_you_screen.dart';
 import 'screens/welcome/change_start_date_screen.dart';
 import 'screens/welcome/proximity_screen.dart';
+import 'screens/help/instructions_screen.dart';
 import 'screens/list_of_events/list_of_events_screen.dart';
 import 'screens/manage/add_an_event_screen.dart';
 import 'screens/manage/add_venue_screen.dart';
@@ -83,6 +84,10 @@ class MyApp extends ConsumerWidget {
         GoRoute(
           path: '/terms',
           builder: (context, state) => const TermsScreen(),
+        ),
+        GoRoute(
+          path: '/instructions',
+          builder: (context, state) => const InstructionsScreen(),
         ),
       ],
 
