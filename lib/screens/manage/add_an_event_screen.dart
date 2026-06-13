@@ -54,6 +54,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
   String _monthlyWeek = '1st';
   String _monthlyDay = 'Monday';
   String _weeklyDay = 'Monday';
+  String _fortnightlyDay = 'Monday';
   DateTime? _startDate;
   DateTime? _endDate;
 
@@ -186,6 +187,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
       _monthlyWeek = (data['monthlyWeek'] ?? _monthlyWeek).toString();
       _monthlyDay = (data['monthlyDay'] ?? _monthlyDay).toString();
       _weeklyDay = (data['weeklyDay'] ?? _weeklyDay).toString();
+      _fortnightlyDay = (data['fortnightlyDay'] ?? _fortnightlyDay).toString();
       _startDate = _timestampToDate(data['scheduleStartDate']);
       _endDate = _timestampToDate(data['scheduleEndDate']);
       _exceptionDates = exceptions;
@@ -242,6 +244,9 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         'monthlyWeek': _frequency == 'monthly' ? _monthlyWeek : null,
         'monthlyDay': _frequency == 'monthly' ? _monthlyDay : null,
         'weeklyDay': _frequency == 'weekly' ? _weeklyDay : null,
+        'fortnightlyDay': _frequency == 'fortnightly'
+            ? _fortnightlyDay
+            : null,
         'scheduleStartDate': _startDate == null
             ? null
             : Timestamp.fromDate(DateUtils.dateOnly(_startDate!).toUtc()),
@@ -539,11 +544,13 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
           children: [
             _frequencyOption('Random', 'random'),
             _frequencyOption('Weekly', 'weekly'),
+            _frequencyOption('Fortnightly', 'fortnightly'),
             _frequencyOption('Monthly', 'monthly'),
           ],
         ),
         if (_frequency == 'random') _randomSchedule(),
         if (_frequency == 'weekly') _weeklySchedule(),
+        if (_frequency == 'fortnightly') _fortnightlySchedule(),
         if (_frequency == 'monthly') _monthlySchedule(),
         if (_frequency != 'random') _recurringCommonDates(),
         const SizedBox(height: 12),
@@ -671,6 +678,20 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
           .map((day) => DropdownMenuItem(value: day, child: Text(day)))
           .toList(),
       onChanged: (value) => setState(() => _weeklyDay = value!),
+    );
+  }
+
+  Widget _fortnightlySchedule() {
+    return DropdownButtonFormField<String>(
+      value: _fortnightlyDay,
+      decoration: const InputDecoration(
+        labelText: 'Day of week',
+        border: OutlineInputBorder(),
+      ),
+      items: _weekDays
+          .map((day) => DropdownMenuItem(value: day, child: Text(day)))
+          .toList(),
+      onChanged: (value) => setState(() => _fortnightlyDay = value!),
     );
   }
 
