@@ -29,6 +29,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
   final _dateFormat = DateFormat('dd MMM yyyy');
   final _random = Random.secure();
   final _eventIdChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  static const _eventIdLength = 5;
   final _weekDays = const [
     'Monday',
     'Tuesday',
@@ -102,7 +103,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
     final fs = ref.read(firestoreServiceProvider);
     for (var attempt = 0; attempt < 6; attempt++) {
       final candidate = List.generate(
-        9,
+        _eventIdLength,
         (_) => _eventIdChars[_random.nextInt(_eventIdChars.length)],
       ).join();
       try {
@@ -120,8 +121,8 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
 
   Future<void> _loadEventForEditing() async {
     final eventReference = _normaliseReference(_eventIdCtrl.text);
-    if (eventReference.length != 9) {
-      _show('Enter a 9 character event reference.');
+    if (eventReference.length != _eventIdLength) {
+      _show('Enter a $_eventIdLength character event reference.');
       return;
     }
 
@@ -437,7 +438,9 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
             textCapitalization: TextCapitalization.characters,
             validator: (value) {
               final text = _normaliseReference(value ?? '');
-              if (text.length != 9) return 'Enter 9 letters or numbers';
+              if (text.length != _eventIdLength) {
+                return 'Enter $_eventIdLength letters or numbers';
+              }
               return null;
             },
           ),
