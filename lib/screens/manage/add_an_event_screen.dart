@@ -621,33 +621,41 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
 
   Widget _randomSchedule() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        OutlinedButton.icon(
-          onPressed: _addRandomDate,
-          icon: const Icon(Icons.event),
-          label: const Text('Add Date And Time'),
-        ),
-        const SizedBox(height: 8),
-        if (_randomDates.isEmpty)
-          Text(
-            'No dates added yet.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ..._randomDates.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(_dateFormat.format(item.date)),
-            subtitle: Text(item.time.format(context)),
-            trailing: IconButton(
-              tooltip: 'Remove date',
-              icon: const Icon(Icons.delete),
-              onPressed: () => setState(() => _randomDates.removeAt(index)),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            ActionChip(
+              avatar: const Icon(Icons.add, size: 18),
+              label: const Text('Date and time'),
+              onPressed: _addRandomDate,
             ),
-          );
-        }),
+            if (_randomDates.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Text(
+                  'No dates added.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ..._randomDates.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              return InputChip(
+                label: Text(
+                  '${_dateFormat.format(item.date)} ${item.time.format(context)}',
+                ),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onDeleted: () => setState(() => _randomDates.removeAt(index)),
+              );
+            }),
+          ],
+        ),
       ],
     );
   }
