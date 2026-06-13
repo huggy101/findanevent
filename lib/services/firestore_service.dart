@@ -82,6 +82,19 @@ class FirestoreService {
     return q.docs.map(EventItem.fromDoc).toList();
   }
 
+  /// Fetch raw event documents for recurrence-aware local matching.
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getEventDocsByType(
+    String typeId,
+  ) async {
+    final q = await _db
+        .collection('events')
+        .where('type', isEqualTo: typeId)
+        .limit(500)
+        .get();
+
+    return q.docs;
+  }
+
   /// Fetch single venue by ID
   Future<Venue?> getVenue(String id) async {
     final d = await _db.collection('venues').doc(id).get();

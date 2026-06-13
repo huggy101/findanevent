@@ -299,11 +299,9 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
       }
       return true;
     }
-    if (_startDate == null || _endDate == null) {
-      _show('Select start and end dates.');
-      return false;
-    }
-    if (_endDate!.isBefore(_startDate!)) {
+    if (_startDate != null &&
+        _endDate != null &&
+        _endDate!.isBefore(_startDate!)) {
       _show('End date must be after the start date.');
       return false;
     }
@@ -316,14 +314,14 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
       return sorted.first.dateTime;
     }
-    return DateUtils.dateOnly(_startDate!);
+    return DateUtils.dateOnly(_startDate ?? DateTime.now());
   }
 
   DateTime _primaryEnd(DateTime start) {
     if (_frequency == 'random') {
       return start.add(const Duration(hours: 2));
     }
-    return DateUtils.dateOnly(_endDate!).add(
+    return DateUtils.dateOnly(_endDate ?? DateTime(start.year + 5, 12, 31)).add(
       const Duration(hours: 23, minutes: 59),
     );
   }
@@ -745,7 +743,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
                 icon: const Icon(Icons.today),
                 label: Text(
                   _startDate == null
-                      ? 'Start Date'
+                      ? 'Start Date (Optional)'
                       : _dateFormat.format(_startDate!),
                 ),
               ),
@@ -759,7 +757,9 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
                 ),
                 icon: const Icon(Icons.event_available),
                 label: Text(
-                  _endDate == null ? 'End Date' : _dateFormat.format(_endDate!),
+                  _endDate == null
+                      ? 'End Date (Optional)'
+                      : _dateFormat.format(_endDate!),
                 ),
               ),
             ),

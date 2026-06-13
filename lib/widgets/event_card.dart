@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import '../models/event_models.dart';
+
 class EventCard extends StatelessWidget {
   final EventItem event;
   final Venue venue;
   final String distanceLabel;
-  final String eventTypeLabel; // 🔑 added
+  final String eventTypeLabel;
 
   const EventCard({
     super.key,
@@ -16,17 +19,17 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dateLabel = DateFormat('EEE d MMM yyyy, HH:mm').format(event.start);
+    final distanceText = distanceLabel.isEmpty ? '' : ' - $distanceLabel away';
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: ListTile(
         title: Text(venue.name),
-        subtitle: Text(
-          '$eventTypeLabel • ${event.start.toLocal()} • $distanceLabel away',
-        ),
+        subtitle: Text('$eventTypeLabel - $dateLabel$distanceText'),
         leading: const Icon(Icons.location_on),
         trailing: const Icon(Icons.chevron_right),
       ),
     );
   }
 }
-
