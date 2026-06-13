@@ -43,7 +43,13 @@ class WelcomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(searchSettingsProvider);
+    final eventTypesAsync = ref.watch(eventTypesProvider);
     final selectedEventTypes = ref.watch(selectedEventTypesProvider);
+    final eventTypesLabel = eventTypesAsync.maybeWhen(
+      loading: () => 'Loading Event Types',
+      error: (_, _) => _eventTypesLabel(selectedEventTypes, settings.eventTypeIds),
+      orElse: () => _eventTypesLabel(selectedEventTypes, settings.eventTypeIds),
+    );
 
     String proximityLabel;
     switch (settings.proximityScope) {
@@ -85,12 +91,7 @@ class WelcomeScreen extends ConsumerWidget {
 
                       OutlinedButton(
                         onPressed: () => context.push('/select'),
-                        child: Text(
-                          _eventTypesLabel(
-                            selectedEventTypes,
-                            settings.eventTypeIds,
-                          ),
-                        ),
+                        child: Text(eventTypesLabel),
                       ),
 
                       const SizedBox(height: 12),

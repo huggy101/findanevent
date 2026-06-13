@@ -26,7 +26,9 @@ class EventCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: ListTile(
         title: Text(venue.name),
-        subtitle: Text('$eventTypeLabel - $dateLabel$distanceText'),
+        subtitle: Text(
+          'ID ${event.id} - $eventTypeLabel - $dateLabel$distanceText',
+        ),
         leading: const Icon(Icons.location_on),
         trailing: const Icon(Icons.chevron_right),
       ),
