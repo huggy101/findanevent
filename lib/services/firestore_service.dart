@@ -42,6 +42,25 @@ class FirestoreService {
     return _db.collection('venues').doc(venue.id).update(venue.toMap());
   }
 
+  /// Fetch an event by its public reference / document ID.
+  Future<DocumentSnapshot<Map<String, dynamic>>?> getEventByReference(
+    String eventReference,
+  ) async {
+    final d = await _db.collection('events').doc(eventReference).get();
+    return d.exists ? d : null;
+  }
+
+  /// Create or update an event using the generated public reference as doc ID.
+  Future<void> saveEvent({
+    required String eventReference,
+    required Map<String, dynamic> data,
+  }) {
+    return _db
+        .collection('events')
+        .doc(eventReference)
+        .set(data, SetOptions(merge: true));
+  }
+
   /// Fetch events by Firestore type ID and start date
   Future<List<EventItem>> getEvents({
     required String typeId, // 🔑 replaced EventType with string ID

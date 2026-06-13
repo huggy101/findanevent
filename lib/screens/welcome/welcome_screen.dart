@@ -131,13 +131,24 @@ class WelcomeScreen extends ConsumerWidget {
 
                       const SizedBox(height: 12),
 
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.push('/add-venue'),
-                          icon: const Icon(Icons.add_business),
-                          label: const Text('Add Venue'),
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => context.push('/add-venue'),
+                              icon: const Icon(Icons.add_business),
+                              label: const Text('Add Venue'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => context.push('/add-event'),
+                              icon: const Icon(Icons.event),
+                              label: const Text('Add An Event'),
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 30),
