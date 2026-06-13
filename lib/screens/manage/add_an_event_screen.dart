@@ -529,23 +529,15 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
           maxLines: 3,
         ),
         Text('Frequency', style: Theme.of(context).textTheme.titleSmall),
-        RadioListTile<String>(
-          title: const Text('Random'),
-          value: 'random',
-          groupValue: _frequency,
-          onChanged: (value) => setState(() => _frequency = value!),
-        ),
-        RadioListTile<String>(
-          title: const Text('Weekly'),
-          value: 'weekly',
-          groupValue: _frequency,
-          onChanged: (value) => setState(() => _frequency = value!),
-        ),
-        RadioListTile<String>(
-          title: const Text('Monthly'),
-          value: 'monthly',
-          groupValue: _frequency,
-          onChanged: (value) => setState(() => _frequency = value!),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 12,
+          runSpacing: 4,
+          children: [
+            _frequencyOption('Random', 'random'),
+            _frequencyOption('Weekly', 'weekly'),
+            _frequencyOption('Monthly', 'monthly'),
+          ],
         ),
         if (_frequency == 'random') _randomSchedule(),
         if (_frequency == 'weekly') _weeklySchedule(),
@@ -553,20 +545,11 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         if (_frequency != 'random') _recurringCommonDates(),
         const SizedBox(height: 12),
         Text('Provided', style: Theme.of(context).textTheme.titleSmall),
-        ..._providedOptions.map(
-          (option) => CheckboxListTile(
-            title: Text(option),
-            value: _provided.contains(option),
-            onChanged: (selected) {
-              setState(() {
-                if (selected ?? false) {
-                  _provided.add(option);
-                } else {
-                  _provided.remove(option);
-                }
-              });
-            },
-          ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 12,
+          runSpacing: 4,
+          children: _providedOptions.map(_providedOption).toList(),
         ),
         _textField(controller: _providedOtherCtrl, label: 'Other'),
         _textField(controller: _commentsCtrl, label: 'Comments', maxLines: 5),
@@ -584,6 +567,53 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         ),
       ],
     );
+  }
+
+  Widget _frequencyOption(String label, String value) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(4),
+      onTap: () => setState(() => _frequency = value),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Radio<String>(
+            value: value,
+            groupValue: _frequency,
+            visualDensity: VisualDensity.compact,
+            onChanged: (selected) => setState(() => _frequency = selected!),
+          ),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  Widget _providedOption(String option) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(4),
+      onTap: () => _toggleProvided(option, !_provided.contains(option)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Checkbox(
+            value: _provided.contains(option),
+            visualDensity: VisualDensity.compact,
+            onChanged: (selected) => _toggleProvided(option, selected ?? false),
+          ),
+          Text(option),
+        ],
+      ),
+    );
+  }
+
+  void _toggleProvided(String option, bool selected) {
+    setState(() {
+      if (selected) {
+        _provided.add(option);
+      } else {
+        _provided.remove(option);
+      }
+    });
   }
 
   Widget _randomSchedule() {
