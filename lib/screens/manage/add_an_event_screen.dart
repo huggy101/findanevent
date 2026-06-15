@@ -29,7 +29,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
   final _dateFormat = DateFormat('dd MMM yyyy');
   final _random = Random.secure();
   final _eventIdChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  static const _eventIdLength = 5;
+  static const _eventIdLength = 6;
   final _weekDays = const [
     'Monday',
     'Tuesday',
@@ -102,7 +102,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
 
   Future<void> _generateEventReference() async {
     final fs = ref.read(firestoreServiceProvider);
-    for (var attempt = 0; attempt < 6; attempt++) {
+    for (var attempt = 0; attempt < 20; attempt++) {
       final candidate = List.generate(
         _eventIdLength,
         (_) => _eventIdChars[_random.nextInt(_eventIdChars.length)],
@@ -117,6 +117,10 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         if (mounted) _eventIdCtrl.text = candidate;
         return;
       }
+    }
+
+    if (mounted) {
+      _show('Could not generate a unique event ID. Please try again.');
     }
   }
 
