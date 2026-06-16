@@ -40,7 +40,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
     'Sunday',
   ];
   final _monthWeeks = const ['1st', '2nd', '3rd', '4th', 'Last'];
-  final _providedOptions = const ['PA', 'Guitar', 'Bass', 'Keyboard', 'Drum'];
+  final _providedOptions = const ['PA', 'Guitar', 'Bass', 'Keyboard', 'DrumKit'];
 
   List<Venue> _venues = const [];
   List<EventTypeModel> _eventTypes = const [];
@@ -283,7 +283,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
       if (!mounted) return;
       await _showDialogMessage(
         title: _editingExisting ? 'Event updated' : 'Event created',
-        message: 'Saved event reference $eventReference.',
+        message: 'Saved event reference $eventReference. You will need this to edit the event later.',
       );
       if (!mounted) return;
       Navigator.of(context).pop();
