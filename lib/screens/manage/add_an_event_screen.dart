@@ -55,6 +55,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
   String _monthlyDay = 'Monday';
   String _weeklyDay = 'Monday';
   String _fortnightlyDay = 'Monday';
+  TimeOfDay _recurringStartTime = const TimeOfDay(hour: 19, minute: 30);
   DateTime? _startDate;
   DateTime? _endDate;
 
@@ -192,6 +193,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
       _monthlyDay = (data['monthlyDay'] ?? _monthlyDay).toString();
       _weeklyDay = (data['weeklyDay'] ?? _weeklyDay).toString();
       _fortnightlyDay = (data['fortnightlyDay'] ?? _fortnightlyDay).toString();
+      _recurringStartTime = _recurringTimeFromEvent(data);
       _startDate = _timestampToDate(data['scheduleStartDate']);
       _endDate = _timestampToDate(data['scheduleEndDate']);
       _exceptionDates = exceptions;
@@ -251,6 +253,12 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         'fortnightlyDay': _frequency == 'fortnightly'
             ? _fortnightlyDay
             : null,
+        'recurringStartTime': _frequency == 'random'
+            ? null
+            : {
+                'hour': _recurringStartTime.hour,
+                'minute': _recurringStartTime.minute,
+              },
         'scheduleStartDate': _startDate == null
             ? null
             : Timestamp.fromDate(DateUtils.dateOnly(_startDate!).toUtc()),
@@ -309,6 +317,16 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
       _show('End date must be after the start date.');
       return false;
     }
+    if (_frequency == 'fortnightly' && _startDate == null) {
+      _show('Add a start date for fortnightly events.');
+      return false;
+    }
+    if (_frequency == 'fortnightly' &&
+        _startDate != null &&
+        _weekDays[_startDate!.weekday - 1] != _fortnightlyDay) {
+      _show('Fortnightly start date must match the selected day of week.');
+      return false;
+    }
     return true;
   }
 
@@ -318,16 +336,24 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
         ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
       return sorted.first.dateTime;
     }
-    return DateUtils.dateOnly(_startDate ?? DateTime.now());
+    final date = DateUtils.dateOnly(_startDate ?? DateTime.now());
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      _recurringStartTime.hour,
+      _recurringStartTime.minute,
+    );
   }
 
   DateTime _primaryEnd(DateTime start) {
     if (_frequency == 'random') {
       return start.add(const Duration(hours: 2));
     }
-    return DateUtils.dateOnly(_endDate ?? DateTime(start.year + 5, 12, 31)).add(
-      const Duration(hours: 23, minutes: 59),
+    final date = DateUtils.dateOnly(
+      _endDate ?? DateTime(start.year + 5, 12, 31),
     );
+    return DateTime(date.year, date.month, date.day, 23, 59);
   }
 
   List<Venue> get _venueMatches {
@@ -693,7 +719,7 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
       items: _weekDays
           .map((day) => DropdownMenuItem(value: day, child: Text(day)))
           .toList(),
-      onChanged: (value) => setState(() => _fortnightlyDay = value!),
+      onChanged: (value) => _setFortnightlyDay(value!),
     );
   }
 
@@ -740,14 +766,28 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
+                onPressed: _pickRecurringStartTime,
+                icon: const Icon(Icons.schedule),
+                label: Text(
+                  'Start Time ${_recurringStartTime.format(context)}',
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
                 onPressed: () => _pickDate(
                   initial: _startDate,
-                  onPicked: (date) => setState(() => _startDate = date),
+                  onPicked: _setScheduleStartDate,
                 ),
                 icon: const Icon(Icons.today),
                 label: Text(
                   _startDate == null
-                      ? 'Start Date (Optional)'
+                      ? _startDateLabel
                       : _dateFormat.format(_startDate!),
                 ),
               ),
@@ -825,6 +865,34 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
     );
   }
 
+  Future<void> _pickRecurringStartTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _recurringStartTime,
+    );
+    if (picked != null && mounted) {
+      setState(() => _recurringStartTime = picked);
+    }
+  }
+
+  void _setScheduleStartDate(DateTime date) {
+    setState(() {
+      _startDate = date;
+      if (_frequency == 'fortnightly') {
+        _fortnightlyDay = _weekDays[date.weekday - 1];
+      }
+    });
+  }
+
+  void _setFortnightlyDay(String day) {
+    setState(() {
+      _fortnightlyDay = day;
+      if (_startDate != null && _weekDays[_startDate!.weekday - 1] != day) {
+        _startDate = null;
+      }
+    });
+  }
+
   Future<void> _pickDate({
     required DateTime? initial,
     required ValueChanged<DateTime> onPicked,
@@ -869,6 +937,32 @@ class _AddAnEventScreenState extends ConsumerState<AddAnEventScreen> {
     if (value is Timestamp) return DateUtils.dateOnly(value.toDate().toLocal());
     return null;
   }
+
+  TimeOfDay _recurringTimeFromEvent(Map<String, dynamic> data) {
+    final value = data['recurringStartTime'];
+    if (value is Map) {
+      final hour = value['hour'];
+      final minute = value['minute'];
+      if (hour is int &&
+          minute is int &&
+          hour >= 0 &&
+          hour < 24 &&
+          minute >= 0 &&
+          minute < 60) {
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+    }
+
+    final start = data['start'];
+    if (start is Timestamp) {
+      return TimeOfDay.fromDateTime(start.toDate().toLocal());
+    }
+
+    return const TimeOfDay(hour: 19, minute: 30);
+  }
+
+  String get _startDateLabel =>
+      _frequency == 'fortnightly' ? 'Start Date' : 'Start Date (Optional)';
 
   String _normalisePostcode(String value) =>
       value.trim().replaceAll(RegExp(r'\s+'), '').toUpperCase();

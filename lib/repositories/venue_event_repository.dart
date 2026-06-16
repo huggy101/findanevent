@@ -71,6 +71,7 @@ class VenueEventRepository {
     final frequency = (data['frequency'] ?? '').toString();
     final scheduleStart = _timestampToLocalDate(data['scheduleStartDate']);
     final scheduleEnd = _timestampToLocalDate(data['scheduleEndDate']);
+    final recurringStartTime = _recurringStartTime(data['recurringStartTime']);
     final activeStart = scheduleStart == null
         ? rangeStart
         : _latestDate(rangeStart, _dateOnly(scheduleStart));
@@ -93,6 +94,7 @@ class VenueEventRepository {
         weekday: weekday,
         everyWeeks: 1,
         exceptions: exceptions,
+        startTime: recurringStartTime,
       );
       return;
     }
@@ -110,6 +112,7 @@ class VenueEventRepository {
         weekday: weekday,
         everyWeeks: 2,
         exceptions: exceptions,
+        startTime: recurringStartTime,
         anchor: anchor,
       );
       return;
@@ -128,6 +131,7 @@ class VenueEventRepository {
         weekday: weekday,
         ordinal: ordinal,
         exceptions: exceptions,
+        startTime: recurringStartTime,
       );
       return;
     }
@@ -167,6 +171,7 @@ class VenueEventRepository {
     required int weekday,
     required int everyWeeks,
     required Set<String> exceptions,
+    required ({int hour, int minute}) startTime,
     DateTime? anchor,
   }) sync* {
     var cursor = _nextWeekdayOnOrAfter(_dateOnly(first), weekday);
@@ -178,7 +183,12 @@ class VenueEventRepository {
       final matchesCycle = anchorDate == null ||
           (cursor.difference(anchorDate).inDays ~/ 7) % everyWeeks == 0;
       if (matchesCycle && !exceptions.contains(_dateKey(cursor))) {
-        yield _eventForOccurrence(docId, venueId, typeId, cursor);
+        yield _eventForOccurrence(
+          docId,
+          venueId,
+          typeId,
+          _withTime(cursor, startTime),
+        );
       }
       cursor = cursor.add(Duration(days: 7 * everyWeeks));
     }
@@ -193,6 +203,7 @@ class VenueEventRepository {
     required int weekday,
     required String ordinal,
     required Set<String> exceptions,
+    required ({int hour, int minute}) startTime,
   }) sync* {
     var month = DateTime(first.year, first.month);
     final lastMonth = DateTime(last.year, last.month);
@@ -208,7 +219,12 @@ class VenueEventRepository {
           !occurrence.isBefore(first) &&
           !occurrence.isAfter(last) &&
           !exceptions.contains(_dateKey(occurrence))) {
-        yield _eventForOccurrence(docId, venueId, typeId, occurrence);
+        yield _eventForOccurrence(
+          docId,
+          venueId,
+          typeId,
+          _withTime(occurrence, startTime),
+        );
       }
       month = DateTime(month.year, month.month + 1);
     }
@@ -283,6 +299,26 @@ class VenueEventRepository {
 
   DateTime _endOfDay(DateTime value) =>
       DateTime(value.year, value.month, value.day, 23, 59, 59, 999);
+
+  DateTime _withTime(DateTime date, ({int hour, int minute}) time) {
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  ({int hour, int minute}) _recurringStartTime(dynamic value) {
+    if (value is Map) {
+      final hour = value['hour'];
+      final minute = value['minute'];
+      if (hour is int &&
+          minute is int &&
+          hour >= 0 &&
+          hour < 24 &&
+          minute >= 0 &&
+          minute < 60) {
+        return (hour: hour, minute: minute);
+      }
+    }
+    return (hour: 0, minute: 0);
+  }
 
   DateTime _latestDate(DateTime a, DateTime b) => a.isAfter(b) ? a : b;
 

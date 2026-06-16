@@ -44,7 +44,7 @@ class InstructionsScreen extends StatelessWidget {
             _InstructionSection(
               title: 'Event Frequency',
               body:
-                  'Random events use individual dates and times. Weekly and fortnightly events use a day of the week. Monthly events use 1st, 2nd, 3rd, 4th, or Last plus a day of the week. Start and end dates are optional, and exception dates can be added for dates when the event is not happening.',
+                  'Random events use individual dates and times. Weekly and fortnightly events use a day of the week and start time. Monthly events use 1st, 2nd, 3rd, 4th, or Last plus a day of the week and start time. Fortnightly events need a start date, while other recurring start dates and all end dates are optional. Exception dates can be added for dates when the event is not happening.',
             ),
             _InstructionSection(
               title: 'Unique Event ID',
