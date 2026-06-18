@@ -8,6 +8,7 @@ import '../../providers/data_providers.dart';
 import '../../providers/event_type_providers.dart';
 import '../../providers/selection_providers.dart';
 import '../../widgets/event_card.dart';
+import '../../widgets/search_settings_buttons.dart';
 
 class ListOfEventsScreen extends ConsumerWidget {
   const ListOfEventsScreen({super.key});
@@ -59,65 +60,77 @@ class ListOfEventsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Events')),
-      body: eventsAsync.when(
-        data: (rows) {
-          if (rows.isEmpty) {
-            return const Center(child: Text('No matching events found.'));
-          }
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: SearchSettingsButtons(spacing: 8),
+          ),
+          Expanded(
+            child: eventsAsync.when(
+              data: (rows) {
+                if (rows.isEmpty) {
+                  return const Center(child: Text('No matching events found.'));
+                }
 
-          return FutureBuilder<(double, double)>(
-            future: _origin(ref),
-            builder: (context, originSnap) {
-              if (!originSnap.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final origin = originSnap.data!;
+                return FutureBuilder<(double, double)>(
+                  future: _origin(ref),
+                  builder: (context, originSnap) {
+                    if (!originSnap.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final origin = originSnap.data!;
 
-              return eventTypesAsync.when(
-                data: (types) {
-                  return ListView.builder(
-                    itemCount: rows.length,
-                    itemBuilder: (context, index) {
-                      final tuple = rows[index];
-                      final event = tuple.$1;
-                      final venue = tuple.$2;
+                    return eventTypesAsync.when(
+                      data: (types) {
+                        return ListView.builder(
+                          itemCount: rows.length,
+                          itemBuilder: (context, index) {
+                            final tuple = rows[index];
+                            final event = tuple.$1;
+                            final venue = tuple.$2;
 
-                      final typeModel = types.firstWhere(
-                        (t) => t.id == event.typeId,
-                        orElse: () => EventTypeModel(
-                          id: event.typeId,
-                          label: event.typeId,
-                          order: 999,
-                        ),
-                      );
+                            final typeModel = types.firstWhere(
+                              (t) => t.id == event.typeId,
+                              orElse: () => EventTypeModel(
+                                id: event.typeId,
+                                label: event.typeId,
+                                order: 999,
+                              ),
+                            );
 
-                      return FutureBuilder<String>(
-                        future: _distanceLabel(
-                          ref,
-                          origin,
-                          (venue.lat, venue.lng),
-                        ),
-                        builder: (context, distSnap) {
-                          return EventCard(
-                            event: event,
-                            venue: venue,
-                            distanceLabel: distSnap.data ?? '',
-                            eventTypeLabel: typeModel.label,
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) =>
-                    Center(child: Text('Error loading types: $err')),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error loading events: $err')),
+                            return FutureBuilder<String>(
+                              future: _distanceLabel(
+                                ref,
+                                origin,
+                                (venue.lat, venue.lng),
+                              ),
+                              builder: (context, distSnap) {
+                                return EventCard(
+                                  event: event,
+                                  venue: venue,
+                                  distanceLabel: distSnap.data ?? '',
+                                  eventTypeLabel: typeModel.label,
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, _) =>
+                          Center(child: Text('Error loading types: $err')),
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) =>
+                  Center(child: Text('Error loading events: $err')),
+            ),
+          ),
+        ],
       ),
     );
   }

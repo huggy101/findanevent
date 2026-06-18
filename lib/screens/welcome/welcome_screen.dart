@@ -3,65 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../models/event_models.dart';
-import '../../models/settings_models.dart';
-import '../../providers/event_type_providers.dart';
-import '../../providers/selection_providers.dart';
 import '../../providers/terms_provider.dart';
+import '../../widgets/search_settings_buttons.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
-  String _locationLabel(SpecifiedLocation loc) {
-    switch (loc.kind) {
-      case SpecifiedLocationKind.postcode:
-        return 'Postcode: ${loc.value}';
-      case SpecifiedLocationKind.plusCode:
-        return 'Plus Code: ${loc.value}';
-      case SpecifiedLocationKind.threeWords:
-        return 'W3W: ///${loc.value}';
-    }
-  }
-
-  String _eventTypesLabel(
-    List<EventTypeModel> selectedTypes,
-    List<String> selectedIds,
-  ) {
-    if (selectedTypes.isEmpty && selectedIds.isEmpty) {
-      return 'Select Event Types';
-    }
-
-    final labels = selectedTypes.isNotEmpty
-        ? selectedTypes.map((t) => t.label).toList()
-        : selectedIds;
-
-    if (labels.length <= 2) return labels.join(', ');
-    return '${labels.take(2).join(', ')} +${labels.length - 2} more';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(searchSettingsProvider);
-    final eventTypesAsync = ref.watch(eventTypesProvider);
-    final selectedEventTypes = ref.watch(selectedEventTypesProvider);
-    final eventTypesLabel = eventTypesAsync.maybeWhen(
-      loading: () => 'Loading Event Types',
-      error: (_, _) => _eventTypesLabel(
-        selectedEventTypes,
-        settings.eventTypeIds,
-      ),
-      orElse: () => _eventTypesLabel(
-        selectedEventTypes,
-        settings.eventTypeIds,
-      ),
-    );
-
-    final proximityLabel = switch (settings.proximityScope) {
-      ProximityScope.miles => 'Within ${settings.miles} miles',
-      ProximityScope.nationwide => 'Nationwide',
-      ProximityScope.worldwide => 'Worldwide',
-    };
-
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -78,19 +27,7 @@ class WelcomeScreen extends ConsumerWidget {
                       child: IntrinsicHeight(
                         child: Column(
                           children: [
-                            _MainActions(
-                              eventTypesLabel: eventTypesLabel,
-                              locationLabel:
-                                  settings.locationMode == LocationMode.current
-                                      ? 'Current Location'
-                                      : settings.specifiedLocation != null
-                                      ? _locationLabel(
-                                          settings.specifiedLocation!,
-                                        )
-                                      : 'Location Specified',
-                              proximityLabel: proximityLabel,
-                              dateLabel: settings.rangeLabel(),
-                            ),
+                            const _MainActions(),
                             const Spacer(),
                             _BottomActions(ref: ref),
                           ],
@@ -117,17 +54,7 @@ class WelcomeScreen extends ConsumerWidget {
 }
 
 class _MainActions extends StatelessWidget {
-  final String eventTypesLabel;
-  final String locationLabel;
-  final String proximityLabel;
-  final String dateLabel;
-
-  const _MainActions({
-    required this.eventTypesLabel,
-    required this.locationLabel,
-    required this.proximityLabel,
-    required this.dateLabel,
-  });
+  const _MainActions();
 
   @override
   Widget build(BuildContext context) {
@@ -145,34 +72,7 @@ class _MainActions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        OutlinedButton(
-          onPressed: () => context.push('/select'),
-          child: Text(eventTypesLabel),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => context.push('/where'),
-                child: Text(locationLabel),
-              ),
-            ),
-            const SizedBox(width: 12),
-            OutlinedButton(
-              onPressed: () => context.push('/proximity'),
-              child: Text(proximityLabel),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => context.push('/change-date'),
-            child: Text(dateLabel),
-          ),
-        ),
+        const SearchSettingsButtons(),
         const SizedBox(height: 12),
         Row(
           children: [
