@@ -20,18 +20,11 @@ class ListOfEventsScreen extends ConsumerStatefulWidget {
 class _ListOfEventsScreenState extends ConsumerState<ListOfEventsScreen> {
   bool _showSettings = false;
 
-  Future<String> _distanceLabel(
+  String _distanceLabel(
     WidgetRef ref,
     (double, double) origin,
     (double, double) dest,
-  ) async {
-    final distance = await ref
-        .read(distanceServiceProvider)
-        .drivingDistanceMeters(origin, dest);
-    if (distance != null) {
-      return '${(distance / 1609.344).toStringAsFixed(1)} miles';
-    }
-
+  ) {
     final km = ref
         .read(distanceServiceProvider)
         .haversineKm(origin.$1, origin.$2, dest.$1, dest.$2);
@@ -122,20 +115,15 @@ class _ListOfEventsScreenState extends ConsumerState<ListOfEventsScreen> {
                               ),
                             );
 
-                            return FutureBuilder<String>(
-                              future: _distanceLabel(
+                            return EventCard(
+                              event: event,
+                              venue: venue,
+                              distanceLabel: _distanceLabel(
                                 ref,
                                 origin,
                                 (venue.lat, venue.lng),
                               ),
-                              builder: (context, distSnap) {
-                                return EventCard(
-                                  event: event,
-                                  venue: venue,
-                                  distanceLabel: distSnap.data ?? '',
-                                  eventTypeLabel: typeModel.label,
-                                );
-                              },
+                              eventTypeLabel: typeModel.label,
                             );
                           },
                         );
