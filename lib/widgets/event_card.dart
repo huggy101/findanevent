@@ -21,11 +21,12 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateLabel = DateFormat('EEE d MMM yyyy, HH:mm').format(event.start);
     final distanceText = distanceLabel.isEmpty ? '' : ' - $distanceLabel away';
+    final postcodeText = venue.postcode.isEmpty ? '' : ' ${venue.postcode}';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: ListTile(
-        title: Text(venue.name),
+        title: Text('${venue.name}$postcodeText'),
         subtitle: Text(
           'ID ${event.id} - $eventTypeLabel - $dateLabel$distanceText',
         ),

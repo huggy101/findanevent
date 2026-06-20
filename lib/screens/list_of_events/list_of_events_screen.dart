@@ -10,8 +10,15 @@ import '../../providers/selection_providers.dart';
 import '../../widgets/event_card.dart';
 import '../../widgets/search_settings_buttons.dart';
 
-class ListOfEventsScreen extends ConsumerWidget {
+class ListOfEventsScreen extends ConsumerStatefulWidget {
   const ListOfEventsScreen({super.key});
+
+  @override
+  ConsumerState<ListOfEventsScreen> createState() => _ListOfEventsScreenState();
+}
+
+class _ListOfEventsScreenState extends ConsumerState<ListOfEventsScreen> {
+  bool _showSettings = false;
 
   Future<String> _distanceLabel(
     WidgetRef ref,
@@ -21,12 +28,14 @@ class ListOfEventsScreen extends ConsumerWidget {
     final distance = await ref
         .read(distanceServiceProvider)
         .drivingDistanceMeters(origin, dest);
-    if (distance != null) return '${(distance / 1000).toStringAsFixed(1)} km';
+    if (distance != null) {
+      return '${(distance / 1609.344).toStringAsFixed(1)} miles';
+    }
 
     final km = ref
         .read(distanceServiceProvider)
         .haversineKm(origin.$1, origin.$2, dest.$1, dest.$2);
-    return '${km.toStringAsFixed(1)} km';
+    return '${(km / 1.609344).toStringAsFixed(1)} miles';
   }
 
   Future<(double, double)> _origin(WidgetRef ref) async {
@@ -54,18 +63,32 @@ class ListOfEventsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final eventsAsync = ref.watch(eventsQueryProvider);
     final eventTypesAsync = ref.watch(eventTypesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Events')),
+      appBar: AppBar(
+        title: const Text('Events'),
+        actions: [
+          IconButton(
+            onPressed: () => setState(
+              () => _showSettings = !_showSettings,
+            ),
+            tooltip: _showSettings ? 'Hide Search Settings' : 'Search Settings',
+            icon: Icon(
+              _showSettings ? Icons.expand_less : Icons.settings,
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: SearchSettingsButtons(spacing: 8),
-          ),
+          if (_showSettings)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: SearchSettingsButtons(spacing: 8),
+            ),
           Expanded(
             child: eventsAsync.when(
               data: (rows) {
