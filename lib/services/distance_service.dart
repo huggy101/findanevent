@@ -11,6 +11,11 @@ class DistanceService {
     double c = 2 * atan2(sqrt(a), sqrt(1-a));
     return R * c;
   }
+
+  double haversineMiles(double lat1, double lon1, double lat2, double lon2) {
+    return haversineKm(lat1, lon1, lat2, lon2) / 1.609344;
+  }
+
   double _deg2rad(double deg) => deg * pi / 180.0;
 
   Future<int?> drivingDistanceMeters((double lat, double lng) origin, (double lat, double lng) dest) async {

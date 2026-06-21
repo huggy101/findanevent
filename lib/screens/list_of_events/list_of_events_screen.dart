@@ -25,10 +25,10 @@ class _ListOfEventsScreenState extends ConsumerState<ListOfEventsScreen> {
     (double, double) origin,
     (double, double) dest,
   ) {
-    final km = ref
+    final miles = ref
         .read(distanceServiceProvider)
-        .haversineKm(origin.$1, origin.$2, dest.$1, dest.$2);
-    return '${(km / 1.609344).toStringAsFixed(1)} straight line miles';
+        .haversineMiles(origin.$1, origin.$2, dest.$1, dest.$2);
+    return '${miles.toStringAsFixed(1)} straight line miles';
   }
 
   Future<(double, double)> _origin(WidgetRef ref) async {
